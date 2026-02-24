@@ -186,8 +186,8 @@
                 document.getElementById('target-ph-val').innerText = (data.trg_ph) ? data.trg_ph.toFixed(1) : "--";
                 
                 // LINGKUNGAN
-                document.getElementById('tgh-val').innerText = (data.t_air ?? "--") + "°C";
-                document.getElementById('tair-val').innerText = data.t_gh ?? "--";
+                document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+                document.getElementById('tair-val').innerText = data.t_air ?? "--";
                 document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
                 
                 // COUNTER POMPA (Samakan dengan key JSON Arduino)
@@ -234,6 +234,7 @@
     </script>
 </body>
 </html>
+
 
 
 
