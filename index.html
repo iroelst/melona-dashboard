@@ -241,12 +241,13 @@
         }
 
         window.onload = () => {
-            document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'long' });
             connectMQTT();
         };
     </script>
 </body>
 </html>
+
 
 
 
