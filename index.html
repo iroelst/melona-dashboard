@@ -232,15 +232,34 @@
             });
         });
 
-        function saveFlowCal() {
-            const a = parseFloat(document.getElementById('mlA').value);
-            const b = parseFloat(document.getElementById('mlB').value);
-            if(!a || !b) return alert("Masukkan hasil ukur gelas!");
-            
-            const payload = JSON.stringify({ "cal_flow_a": a/10, "cal_flow_b": b/10 });
-            sendCommandRaw(payload);
-            alert("Kalibrasi Debit Berhasil!");
-        }
+function saveFlowCal() {
+    // Ambil nilai dan pastikan itu angka
+    const rawA = document.getElementById('mlA').value;
+    const rawB = document.getElementById('mlB').value;
+    
+    const a = parseFloat(rawA);
+    const b = parseFloat(rawB);
+
+    // Cek apakah input valid (bukan kosong dan bukan nol)
+    if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
+        return alert("Masukkan hasil ukur gelas yang valid (lebih dari 0)!");
+    }
+    
+    // Hitung ml per detik (berasumsi test pump jalan 10 detik)
+    // Gunakan .toFixed(2) agar data lebih rapi saat dikirim
+    const flowA = (a / 10).toFixed(2);
+    const flowB = (b / 10).toFixed(2);
+    
+    const payload = JSON.stringify({ 
+        "cal_flow_a": parseFloat(flowA), 
+        "cal_flow_b": parseFloat(flowB) 
+    });
+
+    console.log("Mengirim Kalibrasi:", payload);
+    sendCommandRaw(payload);
+    
+    alert(`Kalibrasi Berhasil!\nPompa A: ${flowA} ml/s\nPompa B: ${flowB} ml/s`);
+}
 
         function sendCalibration(key, inputId) {
             const val = document.getElementById(inputId).value;
@@ -318,3 +337,4 @@
     </script>
 </body>
 </html>
+
