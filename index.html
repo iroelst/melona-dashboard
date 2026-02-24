@@ -56,7 +56,6 @@
         .nav-item.active { color: var(--accent-green); }
         .hidden { display: none; }
         
-        /* Animasi Maintenance */
         .bg-red-soft { background: rgba(255, 65, 54, 0.1) !important; border: 1px solid var(--accent-red); color: var(--accent-red); }
     </style>
 </head>
@@ -90,31 +89,32 @@
                         <span class="label-sm">Suhu GH</span>
                         <div class="display-5 fw-bold mt-1"><span id="tgh-val">--</span><small class="fs-6 text-secondary">°C</small></div>
                         <div class="progress mt-2" style="height: 4px; background: #222;">
+                            <div id="tgh-bar" class="progress-bar bg-warning" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-6">
-    <div class="glass-card text-center">
-        <span class="label-sm">Nutrisi (PPM)</span>
-        <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
-        <div class="mt-2 pt-2 border-top border-secondary">
-            <span class="target-label text-secondary">TARGET: </span>
-            <span class="fw-bold text-white" id="target-ppm-val">--</span>
-        </div>
-    </div>
-</div>
+                    <div class="glass-card text-center">
+                        <span class="label-sm">Nutrisi (PPM)</span>
+                        <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
+                        <div class="mt-2 pt-2 border-top border-secondary">
+                            <span class="target-label text-secondary">TARGET: </span>
+                            <span class="fw-bold text-white" id="target-ppm-val">--</span>
+                        </div>
+                    </div>
+                </div>
 
-<div class="col-6">
-    <div class="glass-card text-center">
-        <span class="label-sm">Tingkat pH</span>
-        <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
-        <div class="mt-2 pt-2 border-top border-secondary">
-            <span class="target-label text-secondary">TARGET: </span>
-            <span class="fw-bold text-white" id="target-ph-val">--</span>
-        </div>
-    </div>
-</div>
+                <div class="col-6">
+                    <div class="glass-card text-center">
+                        <span class="label-sm">Tingkat pH</span>
+                        <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
+                        <div class="mt-2 pt-2 border-top border-secondary">
+                            <span class="target-label text-secondary">TARGET: </span>
+                            <span class="fw-bold text-white" id="target-ph-val">--</span>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="col-6">
                     <div class="glass-card border-start border-warning border-3">
@@ -129,22 +129,25 @@
                     </div>
                 </div>
             </div>
+
+            <div class="glass-card mt-3">
+                <div class="row g-2">
+                    <div class="col-4 text-center">
+                        <small class="label-sm">Dosing AB</small>
+                        <div id="c-ab" class="fw-bold text-green">0</div>
+                    </div>
+                    <div class="col-4 text-center border-start border-end border-secondary">
+                        <small class="label-sm">pH Up</small>
+                        <div id="c-phu" class="fw-bold text-info">0</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <small class="label-sm">pH Down</small>
+                        <div id="c-phd" class="fw-bold text-danger">0</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-<div class="row g-2 mt-2">
-    <div class="col-4 text-center">
-        <small class="label-sm">Dosing AB</small>
-        <div id="c-ab" class="fw-bold">0</div>
-    </div>
-    <div class="col-4 text-center border-start border-end border-secondary">
-        <small class="label-sm">pH Up</small>
-        <div id="c-phu" class="fw-bold">0</div>
-    </div>
-    <div class="col-4 text-center">
-        <small class="label-sm">pH Down</small>
-        <div id="c-phd" class="fw-bold text-danger">0</div>
-    </div>
-</div>
 
     <nav class="bottom-nav">
         <div class="nav-item active"><i class="bi bi-grid-1x2-fill"></i></div>
@@ -152,10 +155,9 @@
     </nav>
 
     <script>
-        // KONFIGURASI SESUAI SCREENSHOT ANDA
         const CONFIG = {
             host: "k1e11691.ala.asia-southeast1.emqxsl.com",
-            port: 8084, // WebSocket SSL Port
+            port: 8084,
             user: "melona_admin",
             pass: "melona123",
             topic: "melona/telemetry"
@@ -170,31 +172,45 @@
         };
 
         client.onMessageArrived = (message) => {
-            const data = JSON.parse(message.payloadString);
-            
-            // Update UI Berdasarkan JSON dari ESP32
-            document.getElementById('hst-val').innerText = data.hst;
-            document.getElementById('ppm-val').innerText = data.ppm;
-            document.getElementById('ph-val').innerText = data.ph.toFixed(1);
-            document.getElementById('tgh-val').innerText = data.t_gh;
-            document.getElementById('tair-val').innerText = data.t_air + "°C";
-            document.getElementById('hum-val').innerText = data.h_gh + "%";
-            document.getElementById('c-ab').innerText = data.t_ab;
-            document.getElementById('c-phu').innerText = data.t_phu;
-            document.getElementById('c-phd').innerText = data.t_phd;
-            
-            // Progress bar suhu
-            document.getElementById('tgh-bar').style.width = (data.t_gh / 50 * 100) + "%";
+            try {
+                const data = JSON.parse(message.payloadString);
+                
+                // DATA UTAMA
+                document.getElementById('hst-val').innerText = data.hst ?? "--";
+                document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+                document.getElementById('ph-val').innerText = (data.ph) ? data.ph.toFixed(1) : "--";
+                
+                // TARGET (Pastikan di Arduino mengirim trg_ppm dan trg_ph)
+                document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+                document.getElementById('target-ph-val').innerText = (data.trg_ph) ? data.trg_ph.toFixed(1) : "--";
+                
+                // LINGKUNGAN
+                document.getElementById('tgh-val').innerText = data.t_gh ?? "--";
+                document.getElementById('tair-val').innerText = (data.t_air ?? "--") + "°C";
+                document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+                
+                // COUNTER POMPA (Samakan dengan key JSON Arduino)
+                document.getElementById('c-ab').innerText = data.t_ab ?? "0";
+                document.getElementById('c-phu').innerText = data.t_phu ?? "0";
+                document.getElementById('c-phd').innerText = data.t_phd ?? "0";
+                
+                // PROGRESS BAR
+                if(data.t_gh) {
+                    document.getElementById('tgh-bar').style.width = (data.t_gh / 50 * 100) + "%";
+                }
 
-            // Logika Indikator Maintenance
-            const banner = document.getElementById('maintenance-banner');
-            const brand = document.getElementById('brand-text');
-            if (data.sys === "OFF") {
-                banner.classList.remove('hidden');
-                brand.innerHTML = 'Melona <span class="text-red">Offline</span>';
-            } else {
-                banner.classList.add('hidden');
-                brand.innerHTML = 'Melona <span class="text-green">System</span>';
+                // MAINTENANCE MODE
+                const banner = document.getElementById('maintenance-banner');
+                const brand = document.getElementById('brand-text');
+                if (data.sys === "OFF") {
+                    banner.classList.remove('hidden');
+                    brand.innerHTML = 'Melona <span class="text-red">Offline</span>';
+                } else {
+                    banner.classList.add('hidden');
+                    brand.innerHTML = 'Melona <span class="text-green">System</span>';
+                }
+            } catch (e) {
+                console.log("Error parsing MQTT data", e);
             }
         };
 
@@ -207,7 +223,8 @@
                     client.subscribe(CONFIG.topic);
                     document.getElementById('mqtt-status').innerText = "Online ●";
                     document.getElementById('mqtt-status').className = "fw-bold text-green";
-                }
+                },
+                onFailure: () => setTimeout(connectMQTT, 5000)
             });
         }
 
@@ -217,11 +234,4 @@
         };
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
