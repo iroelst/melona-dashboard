@@ -240,13 +240,21 @@
             });
         }
 
-        window.onload = () => {
-            document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            connectMQTT();
-        };
+window.onload = () => {
+    const options = { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric'
+    };
+    
+    document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', options);
+    connectMQTT();
+};
     </script>
 </body>
 </html>
+
 
 
 
