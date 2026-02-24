@@ -173,7 +173,20 @@
             try {
                 const data = JSON.parse(message.payloadString);
                 if(data.day && data.month && data.year) {
-                document.getElementById('display-date').innerText = `${data.day}/${data.month}/${data.year}`;
+                const rtcDate = new Date(data.year, data.month - 1, data.day);
+
+                const options = { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+                };
+
+                // Mengubah format menjadi: Rabu, 25 Februari 2026
+                const formatTanggal = rtcDate.toLocaleDateString('id-ID', options);
+        
+                // Masukkan ke elemen HTML tanggal
+                document.getElementById('display-date').innerText = formatTanggal;
                 }
                 
                 // DATA UTAMA
@@ -234,6 +247,7 @@
     </script>
 </body>
 </html>
+
 
 
 
