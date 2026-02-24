@@ -143,24 +143,7 @@
         </div>
     </div>
     <div class="text-center mt-1" style="font-size: 0.6rem; color: #555;">FORMAT: HARIAN | TOTAL</div>
-</div>
-            
-            <div class="glass-card mt-3">
-                <div class="row g-2">
-                    <div class="col-4 text-center">
-                        <small class="label-sm">Dosing AB</small>
-                        <div id="c-ab" class="fw-bold text-green">0</div>
-                    </div>
-                    <div class="col-4 text-center border-start border-end border-secondary">
-                        <small class="label-sm">pH Up</small>
-                        <div id="c-phu" class="fw-bold text-info">0</div>
-                    </div>
-                    <div class="col-4 text-center">
-                        <small class="label-sm">pH Down</small>
-                        <div id="c-phd" class="fw-bold text-danger">0</div>
-                    </div>
-                </div>
-            </div>
+</div>            
         </div>
     </div>
 
@@ -205,12 +188,12 @@
                 document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
                 
                 // COUNTER POMPA (Samakan dengan key JSON Arduino)
-                document.getElementById('d-ab').innerText = data.d_ab;
-                document.getElementById('d-phd').innerText = data.d_phd;
-                document.getElementById('d-phu').innerText = data.d_phu;
-                document.getElementById('c-ab').innerText = data.t_ab ?? "0";
-                document.getElementById('c-phu').innerText = data.t_phu ?? "0";
-                document.getElementById('c-phd').innerText = data.t_phd ?? "0";
+                document.getElementById('d-ab').innerText = data.d_ab ?? "0";;
+                document.getElementById('d-phd').innerText = data.d_phd ?? "0";;
+                document.getElementById('d-phu').innerText = data.d_phu ?? "0";;
+                document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+                document.getElementById('t-phu').innerText = data.t_phu ?? "0";
+                document.getElementById('t-phd').innerText = data.t_phd ?? "0";
 
                 // MAINTENANCE MODE
                 const banner = document.getElementById('maintenance-banner');
@@ -248,6 +231,7 @@
     </script>
 </body>
 </html>
+
 
 
 
