@@ -172,6 +172,9 @@
         client.onMessageArrived = (message) => {
             try {
                 const data = JSON.parse(message.payloadString);
+                if(data.day && data.month && data.year) {
+                document.getElementById('display-date').innerText = `${data.day}/${data.month}/${data.year}`;
+                }
                 
                 // DATA UTAMA
                 document.getElementById('hst-val').innerText = data.hst ?? "--";
@@ -231,6 +234,7 @@
     </script>
 </body>
 </html>
+
 
 
 
