@@ -193,11 +193,6 @@
                 document.getElementById('c-ab').innerText = data.t_ab ?? "0";
                 document.getElementById('c-phu').innerText = data.t_phu ?? "0";
                 document.getElementById('c-phd').innerText = data.t_phd ?? "0";
-                
-                // PROGRESS BAR
-                if(data.t_gh) {
-                    document.getElementById('tgh-bar').style.width = (data.t_gh / 50 * 100) + "%";
-                }
 
                 // MAINTENANCE MODE
                 const banner = document.getElementById('maintenance-banner');
@@ -235,3 +230,4 @@
     </script>
 </body>
 </html>
+
