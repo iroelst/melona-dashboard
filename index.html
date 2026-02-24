@@ -79,13 +79,13 @@
             </div>
 
             <div class="row g-3">
-                <div class="col-7">
+                <div class="col-6">
                     <div class="glass-card text-center">
                         <span class="label-sm">Usia Tanaman</span>
                         <div class="display-5 fw-bold mt-1"><span id="hst-val">--</span> <small class="fs-6 text-secondary">HST</small></div>
                     </div>
                 </div>
-                <div class="col-5">
+                <div class="col-6">
                     <div class="glass-card">
                         <span class="label-sm">Suhu GH</span>
                         <div class="h3 fw-bold mt-1"><span id="tgh-val">--</span><small class="fs-6 text-secondary">°C</small></div>
@@ -96,17 +96,26 @@
                 </div>
 
                 <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Nutrisi (PPM)</span>
-                        <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Tingkat pH</span>
-                        <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
-                    </div>
-                </div>
+    <div class="glass-card text-center">
+        <span class="label-sm">Nutrisi (PPM)</span>
+        <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
+        <div class="mt-2 pt-2 border-top border-secondary">
+            <span class="target-label text-secondary">TARGET: </span>
+            <span class="fw-bold text-white" id="target-ppm-val">--</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-6">
+    <div class="glass-card text-center">
+        <span class="label-sm">Tingkat pH</span>
+        <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
+        <div class="mt-2 pt-2 border-top border-secondary">
+            <span class="target-label text-secondary">TARGET: </span>
+            <span class="fw-bold text-white" id="target-ph-val">--</span>
+        </div>
+    </div>
+</div>
 
                 <div class="col-6">
                     <div class="glass-card border-start border-warning border-3">
@@ -192,4 +201,5 @@
         };
     </script>
 </body>
+
 </html>
