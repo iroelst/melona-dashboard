@@ -280,9 +280,17 @@ function saveFlowCal() {
             client.send(message);
         }
 
+        let lastSeen = Date.now();
+
         client.onMessageArrived = (message) => {
             try {
                 const data = JSON.parse(message.payloadString);
+
+                // LOGIKA HEARTBEAT (SINKRONISASI STATUS ALAT)
+                lastSeen = Date.now(); 
+                const statusEl = document.getElementById('mqtt-status');
+                statusEl.innerText = "Online ●";
+                statusEl.className = "fw-bold text-green";
                 
                 // UPDATE TANGGAL DARI RTC
                 if(data.day && data.month && data.year) {
@@ -307,6 +315,7 @@ function saveFlowCal() {
                 document.getElementById('t-phd').innerText = data.t_phd ?? "0";
                 document.getElementById('t-phu').innerText = data.t_phu ?? "0";
 
+                // MODE MAINTENANCE/SYSTEM OFF
                 const banner = document.getElementById('maintenance-banner');
                 const brand = document.getElementById('brand-text');
                 if (data.sys === "OFF") {
@@ -318,6 +327,16 @@ function saveFlowCal() {
                 }
             } catch (e) { console.error(e); }
         };
+
+    // FUNGSI PENGECEK KEAKTIFAN ALAT (Tambahkan di bagian bawah script)
+    setInterval(() => {
+    // Jika dalam 15 detik tidak ada pesan masuk dari MQTT
+    if (Date.now() - lastSeen > 15000) { 
+        const statusEl = document.getElementById('mqtt-status');
+        statusEl.innerText = "Alat Offline ⚠";
+        statusEl.className = "fw-bold text-red";
+        }
+    }, 5000);
 
         function connectMQTT() {
             client.connect({
@@ -337,4 +356,5 @@ function saveFlowCal() {
     </script>
 </body>
 </html>
+
 
