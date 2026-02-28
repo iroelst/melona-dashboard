@@ -153,9 +153,9 @@
             <div class="glass-card mb-4 border-top border-success border-4">
                 <h5 class="fw-bold"><i class="bi bi-droplet-half text-success"></i> Kalibrasi Debit AB Mix</h5>
                 <p class="small text-secondary">Nyalakan pompa 10 detik, ukur hasilnya, lalu simpan.</p>
-                <button onclick="sendCommand('test_pump', 'AB')" class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
-                    <i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)
-                </button>
+<button id="btn-test-pump" onclick="runPumpTest(event)" class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
+    <i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)
+</button>
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="label-sm">Hasil Pompa A (ml)</label>
@@ -342,6 +342,27 @@ function saveFlowCal() {
         }
     }, 5000);
 
+    function runPumpTest(event) {
+    const btn = document.getElementById('btn-test-pump');
+    
+    // 1. Kirim perintah ke MQTT
+    sendCommand('test_pump', 'AB');
+    
+    // 2. Ubah tampilan tombol jadi "Aktif"
+    btn.classList.remove('btn-outline-success');
+    btn.classList.add('btn-success'); // Warna hijau penuh
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> POMPA SEDANG JALAN...';
+    btn.disabled = true; // Matikan tombol agar tidak diklik dua kali
+
+    // 3. Kembalikan ke awal setelah 10 detik (sesuai durasi di ESP32)
+    setTimeout(() => {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-success'); // Kembali ke warna awal
+        btn.innerHTML = '<i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)';
+        btn.disabled = false;
+    }, 10000); // 10000ms = 10 detik
+}
+
         function connectMQTT() {
             client.connect({
                 useSSL: true, userName: CONFIG.user, password: CONFIG.pass,
@@ -360,6 +381,7 @@ function saveFlowCal() {
     </script>
 </body>
 </html>
+
 
 
 
