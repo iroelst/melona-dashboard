@@ -72,6 +72,18 @@
         select.form-select { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; }
         select.form-select option { background: #1a1a1a; color: white; }
 
+		#device-selector {
+    appearance: none; /* Menghilangkan panah bawaan agar lebih clean */
+    -webkit-appearance: none;
+    background-image: none;
+    cursor: pointer;
+}
+
+#device-selector:focus {
+    box-shadow: none;
+    outline: none;
+}
+
 		/* --- STYLING PLACEHOLDER (Abu-abu Terang) --- */
 ::placeholder { /* Chrome, Safari, Edge, Opera */
     color: #877573 !important;
@@ -668,6 +680,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
