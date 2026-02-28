@@ -363,17 +363,37 @@ function saveFlowCal() {
     }, 10000); // 10000ms = 10 detik
 }
 
-        function connectMQTT() {
-            client.connect({
-                useSSL: true, userName: CONFIG.user, password: CONFIG.pass,
-                onSuccess: () => {
-                    client.subscribe(CONFIG.topicTelemetry);
-                    document.getElementById('mqtt-status').innerText = "Online ●";
-                    document.getElementById('mqtt-status').className = "fw-bold text-green";
-                },
-                onFailure: () => setTimeout(connectMQTT, 5000)
-            });
+function connectMQTT() {
+    // 1. Logika Reconnect Otomatis jika koneksi tiba-tiba putus
+    client.onConnectionLost = (responseObject) => {
+        const statusEl = document.getElementById('mqtt-status');
+        statusEl.innerText = "Reconnecting...";
+        statusEl.className = "fw-bold text-warning";
+        
+        if (responseObject.errorCode !== 0) {
+            console.log("Koneksi Hilang: " + responseObject.errorMessage);
+            setTimeout(connectMQTT, 3000); // Coba nyambung lagi tiap 3 detik
         }
+    };
+
+    // 2. Proses Koneksi ke Broker
+    client.connect({
+        useSSL: true, 
+        userName: CONFIG.user, 
+        password: CONFIG.pass,
+        keepAliveInterval: 30, // Menjaga jalur tetap terbuka
+        onSuccess: () => {
+            client.subscribe(CONFIG.topicTelemetry);
+            document.getElementById('mqtt-status').innerText = "Online ●";
+            document.getElementById('mqtt-status').className = "fw-bold text-green";
+            console.log("MQTT Connected!");
+        },
+        onFailure: (e) => {
+            console.log("Gagal Konek:", e);
+            setTimeout(connectMQTT, 5000); // Gagal? Coba lagi 5 detik kemudian
+        }
+    });
+}
 
         window.onload = () => {
             connectMQTT();
@@ -381,6 +401,7 @@ function saveFlowCal() {
     </script>
 </body>
 </html>
+
 
 
 
