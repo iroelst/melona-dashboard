@@ -32,6 +32,11 @@
             padding-bottom: 110px;
         }
 
+		.hidden {
+    		display: none !important;
+    		visibility: hidden;
+		}
+
         .glass-card {
             background: var(--glass);
             backdrop-filter: blur(15px);
@@ -282,16 +287,29 @@
             auth.signOut();
         }
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('page-login').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                loadUserDevices(user.uid);
-            } else {
-                document.getElementById('page-login').classList.remove('hidden');
-                document.getElementById('app-content').classList.add('hidden');
-            }
-        });
+auth.onAuthStateChanged(user => {
+    const loginPage = document.getElementById('page-login');
+    const appContent = document.getElementById('app-content');
+
+    if (user) {
+        console.log("Melona Auth: User Logged In", user.uid);
+        
+        // Memaksa UI berpindah
+        loginPage.classList.add('hidden');
+        appContent.classList.remove('hidden');
+        
+        // Memuat data dari database
+        loadUserDevices(user.uid);
+        
+        // Update Tanggal di Header
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', options);
+    } else {
+        console.log("Melona Auth: No User");
+        loginPage.classList.remove('hidden');
+        appContent.classList.add('hidden');
+    }
+});
 
         // --- DATABASE LOGIC ---
         function loadUserDevices(uid) {
@@ -454,3 +472,4 @@
     </script>
 </body>
 </html>
+
