@@ -187,7 +187,7 @@
         </div>
 </div>
 
-            <div id="page-dashboard">
+            <div id="page-dashboard" class="hidden">
                 <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
                     <i class="bi bi-tools"></i> MODE MAINTENANCE: SISTEM OFF
                 </div>
@@ -502,7 +502,8 @@ auth.onAuthStateChanged(user => {
         // Sembunyikan login, tampilkan dashboard
         loginPage.classList.add('hidden');
         appContent.classList.remove('hidden');
-        
+        const navItems = document.querySelectorAll('.nav-item');
+        switchPage('home', navItems[0]);
         loadUserDevices(user.uid);
         
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -745,6 +746,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
