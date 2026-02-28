@@ -6,6 +6,11 @@
     <title>Melona Auto System Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     
     <style>
@@ -39,8 +44,6 @@
         .label-sm { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .glow-green { color: var(--accent-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
         .glow-blue { color: var(--accent-blue); text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
-        
-        .status-badge { border-radius: 50px; font-size: 0.8rem; }
         .text-green { color: var(--accent-green) !important; }
         .text-red { color: var(--accent-red) !important; }
 
@@ -55,355 +58,399 @@
         .nav-item { color: #555; font-size: 1.5rem; cursor: pointer; transition: 0.3s; padding: 5px 20px; }
         .nav-item.active { color: var(--accent-green); background: rgba(57, 255, 20, 0.1); border-radius: 25px; }
         .hidden { display: none; }
-        
         .bg-red-soft { background: rgba(255, 65, 54, 0.1) !important; border: 1px solid var(--accent-red); color: var(--accent-red); }
         
         input.form-control { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 12px; }
         input.form-control:focus { background: rgba(255,255,255,0.1); color: white; border-color: var(--accent-green); box-shadow: none; }
+        
+        select.form-select { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; }
+        select.form-select option { background: #1a1a1a; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="container pt-4">
-        <header class="d-flex justify-content-between align-items-center mb-4 px-2">
-            <div>
-                <h4 class="fw-bold mb-0" id="brand-text">Melona <span class="text-green">System</span></h4>
-                <small class="text-secondary" id="display-date">Memuat...</small>
+    <div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center">
+        <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
+            <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
+            <div class="mb-3 text-start">
+                <label class="label-sm px-1">Email</label>
+                <input type="email" id="login-email" class="form-control" placeholder="user@melona.com">
             </div>
-            <div class="glass-card py-1 px-3 status-badge">
-                <small id="mqtt-status" class="fw-bold text-secondary">Connecting...</small>
+            <div class="mb-4 text-start">
+                <label class="label-sm px-1">Password</label>
+                <input type="password" id="login-pass" class="form-control" placeholder="******">
             </div>
-        </header>
-
-        <div id="page-dashboard">
-            <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
-                <i class="bi bi-tools"></i> MODE MAINTENANCE: SISTEM OFF
-            </div>
-            
-            <div class="row g-3">
-                <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Usia Tanaman</span>
-                        <div class="display-5 fw-bold mt-1"><span id="hst-val">--</span><small class="fs-6 text-secondary"> HST</small></div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Suhu Nutrisi</span>
-                        <div class="display-5 fw-bold mt-1"><span id="tair-val">--</span><small class="fs-6 text-secondary"> °C</small></div>
-                    </div>
-                </div>
-
-                <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Nutrisi (PPM)</span>
-                        <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
-                        <div class="mt-2 pt-2 border-top border-secondary">
-                            <span class="target-label text-secondary">TARGET: </span>
-                            <span class="fw-bold text-white" id="target-ppm-val">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6">
-                    <div class="glass-card text-center">
-                        <span class="label-sm">Tingkat pH</span>
-                        <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
-                        <div class="mt-2 pt-2 border-top border-secondary">
-                            <span class="target-label text-secondary">TARGET: </span>
-                            <span class="fw-bold text-white" id="target-ph-val">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6">
-                    <div class="glass-card text-center border-start border-warning border-3">
-                        <span class="label-sm text-warning">Suhu GH</span>
-                        <div class="h4 fw-bold mt-1" id="tgh-val">--°C</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="glass-card text-center border-start border-info border-3">
-                        <span class="label-sm text-info">Humidity GH</span>
-                        <div class="h4 fw-bold mt-1" id="hum-val">--%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-card mt-3">
-                <div class="row g-2 text-center">
-                    <div class="col-4">
-                        <small class="label-sm">Dosing AB</small>
-                        <div class="fw-bold"><span id="d-ab">0</span> | <span id="t-ab" class="text-success">0</span></div>
-                    </div>
-                    <div class="col-4 border-start border-end border-secondary">
-                        <small class="label-sm">pH Down</small>
-                        <div class="fw-bold"><span id="d-phd">0</span> | <span id="t-phd" class="text-danger">0</span></div>
-                    </div>
-                    <div class="col-4">
-                        <small class="label-sm">pH Up</small>
-                        <div class="fw-bold"><span id="d-phu">0</span> | <span id="t-phu" class="text-info">0</span></div>
-                    </div>
-                </div>
-                <div class="text-center mt-1" style="font-size: 0.6rem; color: #555;">FORMAT: HARIAN | TOTAL</div>
-            </div>            
-        </div>
-
-        <div id="page-settings" class="hidden">
-            <div class="glass-card mb-4 border-top border-success border-4">
-                <h5 class="fw-bold"><i class="bi bi-droplet-half text-success"></i> Kalibrasi Debit AB Mix</h5>
-                <p class="small text-secondary">Nyalakan pompa 10 detik, ukur hasilnya, lalu simpan.</p>
-<button id="btn-test-pump" onclick="runPumpTest(event)" class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
-    <i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)
-</button>
-                <div class="row g-2">
-                    <div class="col-6">
-                        <label class="label-sm">Hasil Pompa A (ml)</label>
-                        <input type="number" id="mlA" class="form-control" placeholder="0">
-                    </div>
-                    <div class="col-6">
-                        <label class="label-sm">Hasil Pompa B (ml)</label>
-                        <input type="number" id="mlB" class="form-control" placeholder="0">
-                    </div>
-                </div>
-                <div id="diff-report" class="alert bg-dark mt-3 small hidden border border-secondary">
-                    <i class="bi bi-info-circle"></i> <span id="diff-text"></span>
-                </div>
-                <button onclick="saveFlowCal()" class="btn btn-success w-100 mt-3 fw-bold">SIMPAN KALIBRASI DEBIT</button>
-            </div>
-
-            <div class="glass-card">
-                <h5 class="fw-bold"><i class="bi bi-gear-wide-connected text-primary"></i> Kalibrasi Sensor</h5>
-                <div class="row g-3 mt-1">
-                    <div class="col-6">
-                        <label class="label-sm">Buffer PH</label>
-                        <input type="number" id="calPH" class="form-control" step="0.01" placeholder="6.86">
-                        <button onclick="sendCalibration('set_cal_ph', 'calPH')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI PH</button>
-                    </div>
-                    <div class="col-6">
-                        <label class="label-sm">Buffer TDS</label>
-                        <input type="number" id="calTDS" class="form-control" placeholder="1000">
-                        <button onclick="sendCalibration('set_cal_tds', 'calTDS')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI TDS</button>
-                    </div>
-                </div>
-            </div>
+            <button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
+            <p id="login-error" class="text-danger small hidden mt-2"></p>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('dashboard', this)"><i class="bi bi-grid-1x2-fill"></i></div>
-        <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
-    </nav>
+    <div id="app-content" class="hidden">
+        <div class="container pt-4">
+            <header class="d-flex justify-content-between align-items-center mb-2 px-2">
+                <div>
+                    <h4 class="fw-bold mb-0" id="brand-text">Melona <span class="text-green">System</span></h4>
+                    <small class="text-secondary" id="display-date">Memuat...</small>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-sm text-red"><i class="bi bi-power fs-4"></i></button>
+            </header>
+
+            <div class="px-1 mb-4">
+                <div class="glass-card py-2 px-3 d-flex align-items-center">
+                    <i class="bi bi-house-door text-green me-2"></i>
+                    <select id="device-selector" class="form-select form-select-sm bg-transparent border-0 text-white fw-bold" onchange="switchDevice(this.value)">
+                        <option value="">Memuat Daftar Alat...</option>
+                    </select>
+                    <div id="mqtt-status" class="fw-bold text-secondary small ms-auto text-nowrap">Connecting...</div>
+                </div>
+            </div>
+
+            <div id="page-dashboard">
+                <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
+                    <i class="bi bi-tools"></i> MODE MAINTENANCE: SISTEM OFF
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="glass-card text-center">
+                            <span class="label-sm">Usia Tanaman</span>
+                            <div class="display-5 fw-bold mt-1"><span id="hst-val">--</span><small class="fs-6 text-secondary"> HST</small></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="glass-card text-center">
+                            <span class="label-sm">Suhu Nutrisi</span>
+                            <div class="display-5 fw-bold mt-1"><span id="tair-val">--</span><small class="fs-6 text-secondary"> °C</small></div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="glass-card text-center">
+                            <span class="label-sm">Nutrisi (PPM)</span>
+                            <div class="h2 fw-bold glow-green mt-1" id="ppm-val">--</div>
+                            <div class="mt-2 pt-2 border-top border-secondary">
+                                <span class="target-label text-secondary">TARGET: </span>
+                                <span class="fw-bold text-white" id="target-ppm-val">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="glass-card text-center">
+                            <span class="label-sm">Tingkat pH</span>
+                            <div class="h2 fw-bold glow-blue mt-1" id="ph-val">--</div>
+                            <div class="mt-2 pt-2 border-top border-secondary">
+                                <span class="target-label text-secondary">TARGET: </span>
+                                <span class="fw-bold text-white" id="target-ph-val">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="glass-card text-center border-start border-warning border-3">
+                            <span class="label-sm text-warning">Suhu GH</span>
+                            <div class="h4 fw-bold mt-1" id="tgh-val">--°C</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="glass-card text-center border-start border-info border-3">
+                            <span class="label-sm text-info">Humidity GH</span>
+                            <div class="h4 fw-bold mt-1" id="hum-val">--%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card mt-3">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <small class="label-sm">Dosing AB</small>
+                            <div class="fw-bold"><span id="d-ab">0</span> | <span id="t-ab" class="text-success">0</span></div>
+                        </div>
+                        <div class="col-4 border-start border-end border-secondary">
+                            <small class="label-sm">pH Down</small>
+                            <div class="fw-bold"><span id="d-phd">0</span> | <span id="t-phd" class="text-danger">0</span></div>
+                        </div>
+                        <div class="col-4">
+                            <small class="label-sm">pH Up</small>
+                            <div class="fw-bold"><span id="d-phu">0</span> | <span id="t-phu" class="text-info">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-settings" class="hidden">
+                <div class="glass-card mb-4 border-top border-success border-4">
+                    <h5 class="fw-bold"><i class="bi bi-droplet-half text-success"></i> Kalibrasi Debit AB Mix</h5>
+                    <button id="btn-test-pump" onclick="runPumpTest()" class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
+                        <i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)
+                    </button>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="label-sm">Hasil Pompa A (ml)</label>
+                            <input type="number" id="mlA" class="form-control" placeholder="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="label-sm">Hasil Pompa B (ml)</label>
+                            <input type="number" id="mlB" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                    <div id="diff-report" class="alert bg-dark mt-3 small hidden border border-secondary">
+                        <i class="bi bi-info-circle"></i> <span id="diff-text"></span>
+                    </div>
+                    <button onclick="saveFlowCal()" class="btn btn-success w-100 mt-3 fw-bold">SIMPAN KALIBRASI DEBIT</button>
+                </div>
+
+                <div class="glass-card mb-4">
+                    <h5 class="fw-bold"><i class="bi bi-gear-wide-connected text-primary"></i> Kalibrasi Sensor</h5>
+                    <div class="row g-3 mt-1">
+                        <div class="col-6">
+                            <label class="label-sm">Buffer PH</label>
+                            <input type="number" id="calPH" class="form-control" step="0.01" placeholder="6.86">
+                            <button onclick="sendCalibration('set_cal_ph', 'calPH')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI PH</button>
+                        </div>
+                        <div class="col-6">
+                            <label class="label-sm">Buffer TDS</label>
+                            <input type="number" id="calTDS" class="form-control" placeholder="1000">
+                            <button onclick="sendCalibration('set_cal_tds', 'calTDS')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI TDS</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card border border-primary border-dashed">
+                    <h6 class="fw-bold"><i class="bi bi-plus-circle"></i> Sinkron Alat Baru</h6>
+                    <div class="input-group">
+                        <input type="text" id="new-device-id" class="form-control form-control-sm" placeholder="ID (Contoh: MLN-GH01)">
+                        <button onclick="claimDevice()" class="btn btn-primary btn-sm">SINKRONKAN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchPage('dashboard', this)"><i class="bi bi-grid-1x2-fill"></i></div>
+            <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
+        </nav>
+    </div>
 
     <script>
-        const CONFIG = {
+        // 1. CONFIGURATION (Ganti data Firebase Anda di sini)
+		const firebaseConfig = {
+  			apiKey: "AIzaSyDIjg4h9bPsdSGTEKgDLMy21w2IC8lmCTc",
+  			authDomain: "melona-auto-system.firebaseapp.com",
+  			// Tambahkan baris di bawah ini agar Realtime Database aktif
+  			databaseURL: "https://melona-auto-system-default-rtdb.asia-southeast1.firebasedatabase.app", 
+  			projectId: "melona-auto-system",
+ 			storageBucket: "melona-auto-system.firebasestorage.app",
+ 			messagingSenderId: "862866018640",
+  			appId: "1:862866018640:web:f380a39566f16a54e3dc55",
+  			measurementId: "G-1NC0VEECG8"
+		};
+
+        const MQTT_CONFIG = {
             host: "k1e11691.ala.asia-southeast1.emqxsl.com",
             port: 8084,
             user: "melona_admin",
-            pass: "melona123",
-            topicTelemetry: "melona/telemetry",
-            topicCmd: "melona/cmd"
+            pass: "melona123"
         };
 
-        const client = new Paho.MQTT.Client(CONFIG.host, CONFIG.port, "Web_Client_" + Math.random().toString(16).substr(2, 4));
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        
+        // MQTT Client Global
+        let client = null;
+        let currentDeviceId = "";
+        let lastSeen = Date.now();
 
+        // --- AUTH LOGIC ---
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const errEl = document.getElementById('login-error');
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => errEl.classList.add('hidden'))
+                .catch(err => {
+                    errEl.innerText = err.message;
+                    errEl.classList.remove('hidden');
+                });
+        }
+
+        function handleLogout() {
+            if (client && client.isConnected()) client.disconnect();
+            auth.signOut();
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('page-login').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                loadUserDevices(user.uid);
+            } else {
+                document.getElementById('page-login').classList.remove('hidden');
+                document.getElementById('app-content').classList.add('hidden');
+            }
+        });
+
+        // --- DATABASE LOGIC ---
+        function loadUserDevices(uid) {
+            db.ref(`users/${uid}/devices`).on('value', snapshot => {
+                const devices = snapshot.val();
+                const selector = document.getElementById('device-selector');
+                selector.innerHTML = "";
+
+                if (devices) {
+                    for (let id in devices) {
+                        let opt = document.createElement('option');
+                        opt.value = id;
+                        opt.innerText = devices[id].name || id;
+                        selector.appendChild(opt);
+                    }
+                    if (!currentDeviceId) switchDevice(Object.keys(devices)[0]);
+                } else {
+                    selector.innerHTML = '<option value="">Belum ada alat terdaftar</option>';
+                }
+            });
+        }
+
+        function claimDevice() {
+            const deviceId = document.getElementById('new-device-id').value.trim();
+            const uid = auth.currentUser.uid;
+            if (!deviceId) return alert("Masukkan ID Alat!");
+
+            db.ref(`users/${uid}/devices/${deviceId}`).set({
+                name: "Greenhouse " + deviceId,
+                added_at: Date.now()
+            }).then(() => {
+                alert("Berhasil Sinkron!");
+                document.getElementById('new-device-id').value = "";
+            });
+        }
+
+        // --- NAVIGATION & MQTT LOGIC ---
         function switchPage(pageId, el) {
             document.getElementById('page-dashboard').classList.add('hidden');
             document.getElementById('page-settings').classList.add('hidden');
             document.getElementById('page-' + pageId).classList.remove('hidden');
-            
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             el.classList.add('active');
         }
 
-        // KALKULATOR SELISIH OTOMATIS
-        document.querySelectorAll('#mlA, #mlB').forEach(input => {
-            input.addEventListener('input', () => {
-                const a = parseFloat(document.getElementById('mlA').value) || 0;
-                const b = parseFloat(document.getElementById('mlB').value) || 0;
-                const report = document.getElementById('diff-report');
-                if(a > 0 && b > 0) {
-                    const diff = (a - b).toFixed(1);
-                    report.classList.remove('hidden');
-                    document.getElementById('diff-text').innerHTML = `Selisih: <b>${Math.abs(diff)} ml</b>. Sistem akan menyesuaikan durasi pompa agar nutrisi tetap seimbang 1:1.`;
-                } else {
-                    report.classList.add('hidden');
+        function switchDevice(deviceId) {
+            if (!deviceId) return;
+            if (client && client.isConnected()) client.disconnect();
+            
+            currentDeviceId = deviceId;
+            connectMQTT(deviceId);
+        }
+
+        function connectMQTT(deviceId) {
+            const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
+            client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
+
+            client.onConnectionLost = (resp) => {
+                if(resp.errorCode !== 0) {
+                    document.getElementById('mqtt-status').innerText = "Reconnecting...";
+                    document.getElementById('mqtt-status').className = "fw-bold text-warning small ms-auto";
+                    setTimeout(() => connectMQTT(deviceId), 5000);
                 }
+            };
+
+            client.onMessageArrived = (message) => {
+                try {
+                    const data = JSON.parse(message.payloadString);
+                    lastSeen = Date.now();
+                    updateDashboard(data);
+                } catch (e) { console.error("JSON Error", e); }
+            };
+
+            client.connect({
+                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
+                onSuccess: () => {
+                    client.subscribe(`melona/${deviceId}/telemetry`);
+                    document.getElementById('mqtt-status').innerText = "Online ●";
+                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
+                },
+                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
             });
-        });
+        }
 
-function saveFlowCal() {
-    const btn = event.target;
-    const originalText = btn.innerText;
-    
-    const a = parseFloat(document.getElementById('mlA').value);
-    const b = parseFloat(document.getElementById('mlB').value);
+        function updateDashboard(data) {
+            document.getElementById('hst-val').innerText = data.hst ?? "--";
+            document.getElementById('tair-val').innerText = data.t_air ?? "--";
+            document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+            document.getElementById('ph-val').innerText = data.ph ? data.ph.toFixed(1) : "--";
+            document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+            document.getElementById('target-ph-val').innerText = data.trg_ph ? data.trg_ph.toFixed(1) : "--";
+            document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+            document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+            document.getElementById('d-ab').innerText = data.d_ab ?? "0";
+            document.getElementById('d-phd').innerText = data.d_phd ?? "0";
+            document.getElementById('d-phu').innerText = data.d_phu ?? "0";
+            document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+            document.getElementById('t-phd').innerText = data.t_phd ?? "0";
+            document.getElementById('t-phu').innerText = data.t_phu ?? "0";
 
-    if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
-        return alert("Masukkan hasil ukur gelas yang valid!");
-    }
-    
-    // Hitung ml per detik (berasumsi test pump jalan 10 detik)
-    const flowA = (a / 10).toFixed(2);
-    const flowB = (b / 10).toFixed(2);
-    
-    const payload = JSON.stringify({ 
-        "cal_flow_a": parseFloat(flowA), 
-        "cal_flow_b": parseFloat(flowB) 
-    });
+            const banner = document.getElementById('maintenance-banner');
+            const brand = document.getElementById('brand-text');
+            if (data.sys === "OFF") {
+                banner.classList.remove('hidden');
+                brand.innerHTML = 'Melona <span class="text-red">Maintenance</span>';
+            } else {
+                banner.classList.add('hidden');
+                brand.innerHTML = 'Melona <span class="text-green">System</span>';
+            }
+        }
 
-    // Feedback Visual
-    btn.disabled = true;
-    btn.innerText = "MENYIMPAN...";
-    
-    sendCommandRaw(payload);
-    
-    setTimeout(() => {
-        btn.disabled = false;
-        btn.innerText = originalText;
-        alert(`Kalibrasi Terkirim!\nPompa A: ${flowA} ml/s\nPompa B: ${flowB} ml/s`);
-    }, 1000);
-}
+        // MQTT Command Send
+        function sendCommand(payload) {
+            if (client && client.isConnected()) {
+                const message = new Paho.MQTT.Message(JSON.stringify(payload));
+                message.destinationName = `melona/${currentDeviceId}/cmd`;
+                client.send(message);
+            }
+        }
+
+        // --- FEATURES ---
+        function runPumpTest() {
+            const btn = document.getElementById('btn-test-pump');
+            sendCommand({ test_pump: 'AB' });
+            btn.classList.replace('btn-outline-success', 'btn-success');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> POMPA JALAN...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.classList.replace('btn-success', 'btn-outline-success');
+                btn.innerHTML = '<i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)';
+                btn.disabled = false;
+            }, 10000);
+        }
+
+        function saveFlowCal() {
+            const a = parseFloat(document.getElementById('mlA').value);
+            const b = parseFloat(document.getElementById('mlB').value);
+            if (a > 0 && b > 0) {
+                sendCommand({ cal_flow_a: a/10, cal_flow_b: b/10 });
+                alert("Kalibrasi dikirim!");
+            }
+        }
 
         function sendCalibration(key, inputId) {
             const val = document.getElementById(inputId).value;
-            if(!val) return alert("Masukkan nilai buffer!");
-            const payload = JSON.stringify({ [key]: parseFloat(val) });
-            sendCommandRaw(payload);
-            alert("Kalibrasi Sensor Terkirim!");
+            if (val) {
+                sendCommand({ [key]: parseFloat(val) });
+                alert("Kalibrasi sensor terkirim!");
+            }
         }
 
-        function sendCommand(key, val) {
-            const payload = JSON.stringify({ [key]: val });
-            sendCommandRaw(payload);
-        }
-
-        function sendCommandRaw(payload) {
-            const message = new Paho.MQTT.Message(payload);
-            message.destinationName = CONFIG.topicCmd;
-            client.send(message);
-        }
-
-        let lastSeen = Date.now();
-
-        client.onMessageArrived = (message) => {
-            try {
-                const data = JSON.parse(message.payloadString);
-
-                // LOGIKA HEARTBEAT (SINKRONISASI STATUS ALAT)
-                lastSeen = Date.now(); 
+        // Offline Checker
+        setInterval(() => {
+            if (Date.now() - lastSeen > 15000) {
                 const statusEl = document.getElementById('mqtt-status');
-                statusEl.innerText = "Online ●";
-                statusEl.className = "fw-bold text-green";
-                
-                // UPDATE TANGGAL DARI RTC
-                if(data.day && data.month && data.year) {
-                    const rtcDate = new Date(data.year, data.month - 1, data.day);
-                    document.getElementById('display-date').innerText = rtcDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                }
-                
-                // UPDATE DATA SENSOR
-                document.getElementById('hst-val').innerText = data.hst ?? "--";
-                document.getElementById('tair-val').innerText = data.t_air ?? "--";
-                document.getElementById('ppm-val').innerText = data.ppm ?? "--";
-                document.getElementById('ph-val').innerText = data.ph ? data.ph.toFixed(1) : "--";
-                document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
-                document.getElementById('target-ph-val').innerText = data.trg_ph ? data.trg_ph.toFixed(1) : "--";
-                document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
-                document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
-                
-                document.getElementById('d-ab').innerText = data.d_ab ?? "0";
-                document.getElementById('d-phd').innerText = data.d_phd ?? "0";
-                document.getElementById('d-phu').innerText = data.d_phu ?? "0";
-                document.getElementById('t-ab').innerText = data.t_ab ?? "0";
-                document.getElementById('t-phd').innerText = data.t_phd ?? "0";
-                document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-
-                // MODE MAINTENANCE/SYSTEM OFF
-                const banner = document.getElementById('maintenance-banner');
-                const brand = document.getElementById('brand-text');
-                if (data.sys === "OFF") {
-                    banner.classList.remove('hidden');
-                    brand.innerHTML = 'Melona <span class="text-red">Maintenance</span>';
-                } else {
-                    banner.classList.add('hidden');
-                    brand.innerHTML = 'Melona <span class="text-green">System</span>';
-                }
-            } catch (e) { console.error(e); }
-        };
-
-    // FUNGSI PENGECEK KEAKTIFAN ALAT (Tambahkan di bagian bawah script)
-    setInterval(() => {
-    // Jika dalam 15 detik tidak ada pesan masuk dari MQTT
-    if (Date.now() - lastSeen > 15000) { 
-        const statusEl = document.getElementById('mqtt-status');
-        statusEl.innerText = "Alat Offline ⚠";
-        statusEl.className = "fw-bold text-red";
-        }
-    }, 5000);
-
-    function runPumpTest(event) {
-    const btn = document.getElementById('btn-test-pump');
-    
-    // 1. Kirim perintah ke MQTT
-    sendCommand('test_pump', 'AB');
-    
-    // 2. Ubah tampilan tombol jadi "Aktif"
-    btn.classList.remove('btn-outline-success');
-    btn.classList.add('btn-success'); // Warna hijau penuh
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> POMPA SEDANG JALAN...';
-    btn.disabled = true; // Matikan tombol agar tidak diklik dua kali
-
-    // 3. Kembalikan ke awal setelah 10 detik (sesuai durasi di ESP32)
-    setTimeout(() => {
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-outline-success'); // Kembali ke warna awal
-        btn.innerHTML = '<i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)';
-        btn.disabled = false;
-    }, 10000); // 10000ms = 10 detik
-}
-
-function connectMQTT() {
-    // 1. Logika Reconnect Otomatis jika koneksi tiba-tiba putus
-    client.onConnectionLost = (responseObject) => {
-        const statusEl = document.getElementById('mqtt-status');
-        statusEl.innerText = "Reconnecting...";
-        statusEl.className = "fw-bold text-warning";
-        
-        if (responseObject.errorCode !== 0) {
-            console.log("Koneksi Hilang: " + responseObject.errorMessage);
-            setTimeout(connectMQTT, 3000); // Coba nyambung lagi tiap 3 detik
-        }
-    };
-
-    // 2. Proses Koneksi ke Broker
-    client.connect({
-        useSSL: true, 
-        userName: CONFIG.user, 
-        password: CONFIG.pass,
-        keepAliveInterval: 30, // Menjaga jalur tetap terbuka
-        onSuccess: () => {
-            client.subscribe(CONFIG.topicTelemetry);
-            document.getElementById('mqtt-status').innerText = "Online ●";
-            document.getElementById('mqtt-status').className = "fw-bold text-green";
-            console.log("MQTT Connected!");
-        },
-        onFailure: (e) => {
-            console.log("Gagal Konek:", e);
-            setTimeout(connectMQTT, 5000); // Gagal? Coba lagi 5 detik kemudian
-        }
-    });
-}
-
-        window.onload = () => {
-            connectMQTT();
-        };
+                statusEl.innerText = "Alat Offline ⚠";
+                statusEl.className = "fw-bold text-red small ms-auto";
+            }
+        }, 5000);
     </script>
 </body>
 </html>
-
-
-
-
-
-
