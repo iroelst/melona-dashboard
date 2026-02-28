@@ -152,15 +152,22 @@
                 <button onclick="handleLogout()" class="btn btn-sm text-red"><i class="bi bi-power fs-4"></i></button>
             </header>
 
-            <div class="px-1 mb-3">
-                <div class="glass-card py-2 px-3 d-flex align-items-center">
-                    <i class="bi bi-house-door text-green me-2"></i>
-                    <select id="device-selector" class="form-select form-select-sm bg-transparent border-0 text-white fw-bold" onchange="switchDevice(this.value)">
-                        <option value="">Memuat Daftar Alat...</option>
-                    </select>
-                    <div id="mqtt-status" class="fw-bold text-secondary small ms-auto text-nowrap">Connecting...</div>
-                </div>
-            </div>
+<div class="px-1 mb-3">
+    <div class="glass-card py-2 px-3 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center flex-grow-1" style="flex-basis: 0;">
+            <i class="bi bi-house-door text-green me-2"></i>
+            <select id="device-selector" class="form-select form-select-sm bg-transparent border-0 text-white fw-bold" onchange="switchDevice(this.value)">
+                <option value="">Memuat Daftar Alat...</option>
+            </select>
+        </div>
+
+        <div class="border-start border-secondary mx-2" style="height: 20px; opacity: 0.3;"></div>
+
+        <div class="flex-grow-1 text-end" style="flex-basis: 0;">
+            <div id="mqtt-status" class="fw-bold text-secondary small text-nowrap">Connecting...</div>
+        </div>
+    </div>
+</div>
 
             <div id="page-dashboard">
                 <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
@@ -661,6 +668,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
