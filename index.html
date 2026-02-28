@@ -593,13 +593,22 @@ function viewDetail(id) {
         }
 
         // --- NAVIGATION & MQTT LOGIC ---
-        function switchPage(pageId, el) {
-            document.getElementById('page-dashboard').classList.add('hidden');
-            document.getElementById('page-settings').classList.add('hidden');
-            document.getElementById('page-' + pageId).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
-        }
+function switchPage(pageId, el) {
+    // Sembunyikan SEMUA halaman tanpa terkecuali
+    document.getElementById('page-home').classList.add('hidden');
+    document.getElementById('page-dashboard').classList.add('hidden');
+    document.getElementById('page-settings').classList.add('hidden');
+    
+    // Tampilkan hanya halaman yang dipilih secara spesifik
+    const targetPage = document.getElementById('page-' + pageId);
+    if (targetPage) {
+        targetPage.classList.remove('hidden');
+    }
+    
+    // Update visual tombol navigasi
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    if (el) el.classList.add('active');
+}
 
         function switchDevice(deviceId) {
             if (!deviceId) return;
@@ -736,6 +745,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
