@@ -537,38 +537,34 @@ function loadUserDevices(uid) {
 
                 // 2. Buat Card Ringkasan untuk Page Home
 const cardHtml = `
-    <div class="col-12 col-md-6">
+    <div class="col-12">
         <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h6 class="fw-bold mb-0 text-white">${devices[id].name || id}</h6>
-                    <small id="sum-hst-${id}" class="text-secondary">-- HST</small>
-                </div>
-                <span id="status-${id}" class="badge bg-dark text-secondary small">Offline</span>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0 text-white">${devices[id].name || id}</h6>
+                <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
             </div>
             
-            <div class="row g-2 text-center">
-                <div class="col-6">
-                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
-                        <small class="label-sm d-block" style="font-size:0.6rem">PPM</small>
-                        <span id="sum-ppm-${id}" class="fw-bold text-green">--</span>
-                    </div>
+            <div class="d-flex justify-content-between text-center align-items-center bg-dark bg-opacity-25 rounded-3 py-2 px-1">
+                <div class="flex-fill">
+                    <small class="label-sm d-block" style="font-size:0.55rem">HST</small>
+                    <span id="sum-hst-${id}" class="fw-bold small text-white">--</span>
                 </div>
-                <div class="col-6">
-                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
-                        <small class="label-sm d-block" style="font-size:0.6rem">pH Air</small>
-                        <span id="sum-ph-${id}" class="fw-bold text-blue">--</span>
-                    </div>
+                <div class="flex-fill border-start border-secondary border-opacity-25">
+                    <small class="label-sm d-block" style="font-size:0.55rem">PPM</small>
+                    <span id="sum-ppm-${id}" class="fw-bold small text-green">--</span>
                 </div>
-                <div class="col-6">
-                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
-                        <small class="label-sm d-block" style="font-size:0.6rem">Suhu Air</small>
-                        <span id="sum-temp-${id}" class="fw-bold text-white">--</span><small class="small">°C</small>
-                    </div>
+                <div class="flex-fill border-start border-secondary border-opacity-25">
+                    <small class="label-sm d-block" style="font-size:0.55rem">pH</small>
+                    <span id="sum-ph-${id}" class="fw-bold small text-blue">--</span>
                 </div>
-                <div class="col-6 d-flex align-items-center justify-content-center">
-                    <small class="text-secondary" style="font-size: 0.65rem;">Detail <i class="bi bi-chevron-right"></i></small>
+                <div class="flex-fill border-start border-secondary border-opacity-25">
+                    <small class="label-sm d-block" style="font-size:0.55rem">Suhu</small>
+                    <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem">°</small>
                 </div>
+            </div>
+
+            <div class="text-center mt-2">
+                <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
             </div>
         </div>
     </div>
@@ -708,7 +704,7 @@ function updateDashboard(data) {
     const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
     const sStatus = document.getElementById(`status-${currentDeviceId}`);
 
-    if(sHst) sHst.innerText = (data.hst ?? "--") + " HST";
+    if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
     if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
     if(sTemp) sTemp.innerText = data.t_air ?? "--";
@@ -770,6 +766,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
