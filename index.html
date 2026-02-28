@@ -75,21 +75,41 @@
 </head>
 <body>
 
-    <div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center">
-        <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
-            <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
-            <div class="mb-3 text-start">
-                <label class="label-sm px-1">Email</label>
-                <input type="email" id="login-email" class="form-control" placeholder="user@melona.com">
-            </div>
-            <div class="mb-4 text-start">
-                <label class="label-sm px-1">Password</label>
-                <input type="password" id="login-pass" class="form-control" placeholder="******">
-            </div>
-            <button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
-            <p id="login-error" class="text-danger small hidden mt-2"></p>
+<div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center">
+    <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
+        <h3 class="fw-bold mb-4">Melono <span class="text-green">System</span></h3>
+        
+        <div class="mb-3 text-start">
+            <label class="label-sm px-1">Email</label>
+            <input type="email" id="login-email" class="form-control" placeholder="user@melona.com">
         </div>
+        
+        <div class="mb-3 text-start">
+            <label class="label-sm px-1">Password</label>
+            <div class="input-group">
+                <input type="password" id="login-pass" class="form-control" placeholder="******">
+                <button class="btn btn-outline-secondary border-secondary-subtle" type="button" onclick="togglePassword()">
+                    <i id="toggle-icon" class="bi bi-eye"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-4 d-flex align-items-center">
+            <input type="checkbox" id="remember-me" class="form-check-input bg-dark border-secondary me-2">
+            <label for="remember-me" class="label-sm mb-0 cursor-pointer" style="text-transform: none;">Simpan Login (Ingat Saya)</label>
+        </div>
+        
+        <button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
+        <p id="login-error" class="text-danger small hidden mt-2"></p>
+		<button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
+
+<div class="text-center mt-2">
+    <a href="#" onclick="forgotPassword()" class="label-sm text-decoration-none" style="text-transform: none; color: #888;">Lupa Password?</a>
+</div>
+
+<p id="login-error" class="text-danger small hidden mt-2"></p>
     </div>
+</div>
 
     <div id="app-content" class="hidden">
         <div class="container pt-4">
@@ -282,6 +302,99 @@
                     errEl.classList.remove('hidden');
                 });
         }
+
+// --- FITUR LIHAT PASSWORD ---
+function togglePassword() {
+    const passInput = document.getElementById('login-pass');
+    const icon = document.getElementById('toggle-icon');
+    if (passInput.type === "password") {
+        passInput.type = "text";
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+        passInput.type = "password";
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+}
+
+// --- FITUR AUTO-FILL SAAT HALAMAN DIBUKA ---
+window.onload = function() {
+    const savedEmail = localStorage.getItem('melono_email');
+    if (savedEmail) {
+        document.getElementById('login-email').value = savedEmail;
+        document.getElementById('remember-me').checked = true;
+    }
+};
+
+// --- UPDATE HANDLE LOGIN ---
+function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    const rememberMe = document.getElementById('remember-me').checked;
+    const errEl = document.getElementById('login-error');
+
+    // Atur Persistensi Firebase (LOCAL agar tidak logout saat browser tutup)
+    const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+
+    auth.setPersistence(persistence)
+        .then(() => {
+            return auth.signInWithEmailAndPassword(email, pass);
+        })
+        .then(() => {
+            // Simpan email ke localStorage jika dicentang
+            if (rememberMe) {
+                localStorage.setItem('melono_email', email);
+            } else {
+                localStorage.removeItem('melono_email');
+            }
+            errEl.classList.add('hidden');
+        })
+        .catch(err => {
+            errEl.innerText = "Login Gagal: " + err.message;
+            errEl.classList.remove('hidden');
+        });
+}
+
+		// --- FITUR LUPA PASSWORD (RESET VIA EMAIL) ---
+function forgotPassword() {
+    Swal.fire({
+        title: 'Reset Password Melona',
+        text: 'Masukkan email Anda untuk menerima link reset:',
+        input: 'email',
+        inputPlaceholder: 'user@melona.com',
+        showCancelButton: true,
+        confirmButtonText: 'Kirim Link',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#39ff14',
+        cancelButtonColor: '#ff4136',
+        background: '#1a1d20',
+        color: '#ffffff',
+        inputAttributes: {
+            autocapitalize: 'off'
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            auth.sendPasswordResetEmail(result.value)
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Email Terkirim!',
+                        text: 'Silakan cek kotak masuk atau spam di email Anda.',
+                        background: '#1a1d20',
+                        color: '#ffffff'
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: error.message,
+                        background: '#1a1d20',
+                        color: '#ffffff'
+                    });
+                });
+        }
+    });
+}
 
 function handleLogout() {
     Swal.fire({
@@ -503,5 +616,6 @@ auth.onAuthStateChanged(user => {
     </script>
 </body>
 </html>
+
 
 
