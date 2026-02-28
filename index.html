@@ -77,7 +77,7 @@
 
 <div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center">
     <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
-        <h3 class="fw-bold mb-4">Melono <span class="text-green">System</span></h3>
+        <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
         
         <div class="mb-3 text-start">
             <label class="label-sm px-1">Email</label>
@@ -99,8 +99,6 @@
             <label for="remember-me" class="label-sm mb-0 cursor-pointer" style="text-transform: none;">Simpan Login (Ingat Saya)</label>
         </div>
         
-        <button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
-        <p id="login-error" class="text-danger small hidden mt-2"></p>
 		<button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
 
 <div class="text-center mt-2">
@@ -318,7 +316,7 @@ function togglePassword() {
 
 // --- FITUR AUTO-FILL SAAT HALAMAN DIBUKA ---
 window.onload = function() {
-    const savedEmail = localStorage.getItem('melono_email');
+    const savedEmail = localStorage.getItem('melona_email');
     if (savedEmail) {
         document.getElementById('login-email').value = savedEmail;
         document.getElementById('remember-me').checked = true;
@@ -342,9 +340,9 @@ function handleLogin() {
         .then(() => {
             // Simpan email ke localStorage jika dicentang
             if (rememberMe) {
-                localStorage.setItem('melono_email', email);
+                localStorage.setItem('melona_email', email);
             } else {
-                localStorage.removeItem('melono_email');
+                localStorage.removeItem('melona_email');
             }
             errEl.classList.add('hidden');
         })
@@ -399,7 +397,7 @@ function forgotPassword() {
 function handleLogout() {
     Swal.fire({
         title: 'Keluar dari Sistem?',
-        text: "Anda akan berhenti memantau Melono Auto System secara real-time.",
+        text: "Anda akan berhenti memantau Melona Auto System secara real-time.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#39ff14', // Warna hijau accent
@@ -419,7 +417,7 @@ function handleLogout() {
             auth.signOut().then(() => {
                 Swal.fire({
                     title: 'Berhasil!',
-                    text: 'Sampai jumpa kembali di Melono Auto System.',
+                    text: 'Sampai jumpa kembali di Melona Auto System.',
                     icon: 'success',
                     timer: 1500,
                     showConfirmButton: false,
@@ -616,6 +614,7 @@ auth.onAuthStateChanged(user => {
     </script>
 </body>
 </html>
+
 
 
 
