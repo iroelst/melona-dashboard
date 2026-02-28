@@ -105,8 +105,10 @@
     </style>
 </head>
 <body>
-
-<div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center">
+<div id="loading-screen" class="vh-100 d-flex align-items-center justify-content-center bg-dark">
+    <div class="spinner-border text-success"></div>
+</div>
+<div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center hidden">
     <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
         <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
         
@@ -467,20 +469,20 @@ auth.onAuthStateChanged(user => {
     if (user) {
         console.log("Melona Auth: User Logged In", user.uid);
         
-        // Memaksa UI berpindah
+        // Sembunyikan login, tampilkan dashboard
         loginPage.classList.add('hidden');
         appContent.classList.remove('hidden');
         
-        // Memuat data dari database
         loadUserDevices(user.uid);
         
-        // Update Tanggal di Header
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', options);
     } else {
         console.log("Melona Auth: No User");
-        loginPage.classList.remove('hidden');
+        
+        // Sembunyikan dashboard, tampilkan login
         appContent.classList.add('hidden');
+        loginPage.classList.remove('hidden');
     }
 });
 
@@ -549,6 +551,7 @@ auth.onAuthStateChanged(user => {
             };
 
             client.onMessageArrived = (message) => {
+				console.log("Pesan Masuk: " + message.payloadString);
                 try {
                     const data = JSON.parse(message.payloadString);
                     lastSeen = Date.now();
@@ -651,6 +654,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
