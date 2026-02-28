@@ -71,6 +71,37 @@
         
         select.form-select { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; }
         select.form-select option { background: #1a1a1a; color: white; }
+
+		/* --- STYLING PLACEHOLDER (Abu-abu Terang) --- */
+::placeholder { /* Chrome, Safari, Edge, Opera */
+    color: #cccccc !important;
+    opacity: 0.9; 
+    font-size: 0.9rem;
+}
+
+::-moz-placeholder { /* Firefox */
+    color: #cccccc !important;
+    opacity: 0.9;
+}
+
+:-ms-input-placeholder { /* IE 10-11 */
+    color: #cccccc !important;
+}
+
+/* --- OPTIMASI INPUT SAAT DIKLIK (FOCUS) --- */
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-green); /* Garis tepi jadi hijau Melona */
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); /* Efek glow hijau */
+    color: white;
+}
+
+/* Warna placeholder saat input sedang aktif */
+.form-control:focus::placeholder {
+    color: #ffffff !important;
+    opacity: 0.5;
+    transition: 0.3s;
+}
     </style>
 </head>
 <body>
@@ -81,13 +112,13 @@
         
         <div class="mb-3 text-start">
             <label class="label-sm px-1">Email</label>
-            <input type="email" id="login-email" class="form-control" placeholder="user@melona.com">
+            <input type="email" id="login-email" class="form-control" placeholder="Email">
         </div>
         
         <div class="mb-3 text-start">
             <label class="label-sm px-1">Password</label>
             <div class="input-group">
-                <input type="password" id="login-pass" class="form-control" placeholder="******">
+                <input type="password" id="login-pass" class="form-control" placeholder="Password">
                 <button class="btn btn-outline-secondary border-secondary-subtle" type="button" onclick="togglePassword()">
                     <i id="toggle-icon" class="bi bi-eye"></i>
                 </button>
@@ -614,6 +645,7 @@ auth.onAuthStateChanged(user => {
     </script>
 </body>
 </html>
+
 
 
 
