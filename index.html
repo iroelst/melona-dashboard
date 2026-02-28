@@ -233,20 +233,17 @@
         });
 
 function saveFlowCal() {
-    // Ambil nilai dan pastikan itu angka
-    const rawA = document.getElementById('mlA').value;
-    const rawB = document.getElementById('mlB').value;
+    const btn = event.target;
+    const originalText = btn.innerText;
     
-    const a = parseFloat(rawA);
-    const b = parseFloat(rawB);
+    const a = parseFloat(document.getElementById('mlA').value);
+    const b = parseFloat(document.getElementById('mlB').value);
 
-    // Cek apakah input valid (bukan kosong dan bukan nol)
     if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
-        return alert("Masukkan hasil ukur gelas yang valid (lebih dari 0)!");
+        return alert("Masukkan hasil ukur gelas yang valid!");
     }
     
     // Hitung ml per detik (berasumsi test pump jalan 10 detik)
-    // Gunakan .toFixed(2) agar data lebih rapi saat dikirim
     const flowA = (a / 10).toFixed(2);
     const flowB = (b / 10).toFixed(2);
     
@@ -255,10 +252,17 @@ function saveFlowCal() {
         "cal_flow_b": parseFloat(flowB) 
     });
 
-    console.log("Mengirim Kalibrasi:", payload);
+    // Feedback Visual
+    btn.disabled = true;
+    btn.innerText = "MENYIMPAN...";
+    
     sendCommandRaw(payload);
     
-    alert(`Kalibrasi Berhasil!\nPompa A: ${flowA} ml/s\nPompa B: ${flowB} ml/s`);
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = originalText;
+        alert(`Kalibrasi Terkirim!\nPompa A: ${flowA} ml/s\nPompa B: ${flowB} ml/s`);
+    }, 1000);
 }
 
         function sendCalibration(key, inputId) {
@@ -356,5 +360,6 @@ function saveFlowCal() {
     </script>
 </body>
 </html>
+
 
 
