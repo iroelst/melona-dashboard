@@ -536,29 +536,43 @@ function loadUserDevices(uid) {
                 selector.appendChild(opt);
 
                 // 2. Buat Card Ringkasan untuk Page Home
-                const cardHtml = `
-                    <div class="col-12 col-md-6">
-                        <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="fw-bold mb-0 text-white">${devices[id].name || id}</h6>
-                                <span id="status-${id}" class="badge bg-dark text-secondary small">Offline</span>
-                            </div>
-                            <div class="row text-center g-0">
-                                <div class="col-6 border-end border-secondary">
-                                    <small class="label-sm d-block">PPM</small>
-                                    <span id="sum-ppm-${id}" class="fw-bold text-green">--</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="label-sm d-block">pH</small>
-                                    <span id="sum-ph-${id}" class="fw-bold text-blue">--</span>
-                                </div>
-                            </div>
-                            <div class="text-center mt-2 border-top border-secondary pt-2">
-                                <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
-                            </div>
-                        </div>
+const cardHtml = `
+    <div class="col-12 col-md-6">
+        <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-0 text-white">${devices[id].name || id}</h6>
+                    <small id="sum-hst-${id}" class="text-secondary">-- HST</small>
+                </div>
+                <span id="status-${id}" class="badge bg-dark text-secondary small">Offline</span>
+            </div>
+            
+            <div class="row g-2 text-center">
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
+                        <small class="label-sm d-block" style="font-size:0.6rem">PPM</small>
+                        <span id="sum-ppm-${id}" class="fw-bold text-green">--</span>
                     </div>
-                `;
+                </div>
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
+                        <small class="label-sm d-block" style="font-size:0.6rem">pH Air</small>
+                        <span id="sum-ph-${id}" class="fw-bold text-blue">--</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background: rgba(255,255,255,0.03)">
+                        <small class="label-sm d-block" style="font-size:0.6rem">Suhu Air</small>
+                        <span id="sum-temp-${id}" class="fw-bold text-white">--</span><small class="small">°C</small>
+                    </div>
+                </div>
+                <div class="col-6 d-flex align-items-center justify-content-center">
+                    <small class="text-secondary" style="font-size: 0.65rem;">Detail <i class="bi bi-chevron-right"></i></small>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
                 listContainer.innerHTML += cardHtml;
 
                 // 3. Listen data real-time untuk setiap card (via MQTT atau DB)
@@ -687,16 +701,21 @@ function updateDashboard(data) {
         banner.classList.add('hidden');
         brand.innerHTML = 'Melona <span class="text-green">System</span>';
     }
-	// Update juga data di halaman ringkasan (Page Home) jika elemennya ada
-    const sumPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
-    const sumPh = document.getElementById(`sum-ph-${currentDeviceId}`);
-    const sumStatus = document.getElementById(`status-${currentDeviceId}`);
+// --- LOGIKA UPDATE RINGKASAN DI HOME ---
+    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
+    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
+    const sStatus = document.getElementById(`status-${currentDeviceId}`);
 
-    if(sumPpm) sumPpm.innerText = data.ppm ?? "--";
-    if(sumPh) sumPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sumStatus) {
-        sumStatus.innerText = "Online ●";
-        sumStatus.className = "badge bg-dark text-green small";
+    if(sHst) sHst.innerText = (data.hst ?? "--") + " HST";
+    if(sPpm) sPpm.innerText = data.ppm ?? "--";
+    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    if(sTemp) sTemp.innerText = data.t_air ?? "--";
+    
+    if(sStatus) {
+        sStatus.innerText = "Online ●";
+        sStatus.className = "badge bg-dark text-green small";
     }
 }
 
@@ -751,6 +770,7 @@ function updateDashboard(data) {
     </script>
 </body>
 </html>
+
 
 
 
