@@ -304,12 +304,12 @@ function saveFlowCal() {
                 
                 // UPDATE DATA SENSOR
                 document.getElementById('hst-val').innerText = data.hst ?? "--";
+                document.getElementById('tair-val').innerText = data.t_air ?? "--";
                 document.getElementById('ppm-val').innerText = data.ppm ?? "--";
                 document.getElementById('ph-val').innerText = data.ph ? data.ph.toFixed(1) : "--";
                 document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
                 document.getElementById('target-ph-val').innerText = data.trg_ph ? data.trg_ph.toFixed(1) : "--";
                 document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
-                document.getElementById('tair-val').innerText = (data.t_air ?? "--") + "°C";
                 document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
                 
                 document.getElementById('d-ab').innerText = data.d_ab ?? "0";
@@ -381,6 +381,7 @@ function saveFlowCal() {
     </script>
 </body>
 </html>
+
 
 
 
