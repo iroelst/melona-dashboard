@@ -1,4 +1,4 @@
-const CACHE_NAME = 'melona-v2';
+const CACHE_NAME = 'melona-v2.1';
 const assets = [
   './',
   './index.html',
