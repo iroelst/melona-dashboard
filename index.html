@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Melona Auto System Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -12,10 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/png" href="melona_dosing.png">
 
-<link rel="apple-touch-icon" href="melona_logo.png">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+	<link rel="apple-touch-icon" href="melona_logo.png">
 	
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -751,14 +748,18 @@ function updateDashboard(data) {
             }, 10000);
         }
 
-        function saveFlowCal() {
-            const a = parseFloat(document.getElementById('mlA').value);
-            const b = parseFloat(document.getElementById('mlB').value);
-            if (a > 0 && b > 0) {
-                sendCommand({ cal_flow_a: a/10, cal_flow_b: b/10 });
-                alert("Kalibrasi dikirim!");
-            }
-        }
+function saveFlowCal() {
+    const a = parseFloat(document.getElementById('mlA').value);
+    const b = parseFloat(document.getElementById('mlB').value);
+    
+    if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
+        Swal.fire('Error', 'Masukkan nilai kalibrasi yang valid!', 'error');
+        return;
+    }
+    
+    sendCommand({ cal_flow_a: a/10, cal_flow_b: b/10 });
+    Swal.fire('Berhasil', 'Kalibrasi debit dikirim ke alat!', 'success');
+}
 
         function sendCalibration(key, inputId) {
             const val = document.getElementById(inputId).value;
@@ -790,6 +791,7 @@ function updateDashboard(data) {
 		
 </body>
 </html>
+
 
 
 
