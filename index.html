@@ -605,7 +605,7 @@ function viewDetail(id) {
             if (!deviceId) return alert("Masukkan ID Alat!");
 
             db.ref(`users/${uid}/devices/${deviceId}`).set({
-                name: "Greenhouse " + deviceId,
+                name: "GH " + deviceId,
                 added_at: Date.now()
             }).then(() => {
                 alert("Berhasil Sinkron!");
@@ -791,6 +791,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
