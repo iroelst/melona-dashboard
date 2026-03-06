@@ -610,16 +610,6 @@ if (!devices) {
                     onclick="deleteDevice('${id}')">
                 <i class="bi bi-trash"></i>
             </button>
-            
-            <div class="card-body">
-                <h5 class="card-title text-success">${device.alias || 'Alat'}</h5>
-                <p class="card-text text-secondary small">ID: ${id}</p>
-                <div class="d-flex justify-content-between">
-                    <span>PPM: <b id="ppm-${id}">--</b></span>
-                    <span>pH: <b id="ph-${id}">--</b></span>
-                </div>
-            </div>
-        </div>
                         
                         <div class="d-flex justify-content-between text-center align-items-center bg-dark bg-opacity-25 rounded-3 py-2 px-1">
                             <div class="flex-fill">
@@ -938,6 +928,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
