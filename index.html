@@ -576,7 +576,17 @@ if (!devices) {
             </button>
         </div>
     `;
-	return
+} else {
+            // --- KASUS 2: SUDAH ADA ALAT ---
+            // Tampilkan tombol "+" minimalis di atas daftar kartu
+            listContainer.innerHTML = `
+                <div class="col-12 mb-3 text-end">
+                    <button class="btn btn-outline-success rounded-circle" 
+                            onclick="showSyncModal()" style="width: 45px; height: 45px;">
+                        <i class="bi bi-plus fs-4"></i>
+                    </button>
+                </div>
+            `;
 }
 
         // --- RENDER JIKA ADA ALAT ---
@@ -621,11 +631,7 @@ if (!devices) {
                             <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
                         </div>
                     </div>
-					<div class="col-12 mb-3 text-center">
-                		<button type="button" class="btn btn-success mt-3" onclick="showSyncModal()">
-                		Tambah Alat Baru
-                		</button>
-       	 			</div>
+       	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
         }
@@ -896,6 +902,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
