@@ -576,8 +576,17 @@ if (!devices) {
             </button>
         </div>
     `;
-    return; 
-}
+} else {
+            // --- KASUS 2: SUDAH ADA ALAT ---
+            // Tampilkan tombol "+" minimalis di atas daftar kartu
+            listContainer.innerHTML = `
+                <div class="col-12 mb-3 text-end">
+                    <button class="btn btn-outline-success rounded-circle" 
+                            onclick="showSyncModal()" style="width: 45px; height: 45px;">
+                        <i class="bi bi-plus fs-4"></i>
+                    </button>
+                </div>
+            `;
 
         // --- RENDER JIKA ADA ALAT ---
         for (let id in devices) {
@@ -892,6 +901,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
