@@ -810,7 +810,16 @@ function saveNewDevice() {
 
 // Fungsi buka modal
 function showSyncModal() {
-    new bootstrap.Modal(document.getElementById('syncModal')).show();
+    // Versi JavaScript murni untuk memicu modal Bootstrap 5
+    const modalElement = document.getElementById('syncModal');
+    if (modalElement) {
+        const myModal = new bootstrap.Modal(modalElement);
+        myModal.show();
+    } else {
+        console.error("Elemen syncModal tidak ditemukan di HTML");
+        // Jika modal tidak muncul, kita gunakan SweetAlert sebagai alternatif input
+        claimDeviceSwal(); 
+    }
 }
 
 function saveFlowCal() {
@@ -844,10 +853,10 @@ function saveFlowCal() {
         }, 5000);
     </script>
 
-<div class="modal fade" id="syncModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
+<div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
         <h5 class="modal-title">Sinkronkan Alat Baru</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -855,15 +864,16 @@ function saveFlowCal() {
         <input type="text" id="deviceId" class="form-control mb-2" placeholder="Masukkan ID Alat (contoh: MLN-XXXXXX)">
         <input type="text" id="deviceAlias" class="form-control" placeholder="Beri Nama (contoh: GH1)">
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" onclick="saveNewDevice()">Simpan Alat</button>
-      </div>
+			<div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" onclick="saveNewDevice()">Simpan Alat</button>
+            </div>
     </div>
   </div>
-</div>
 		
 </body>
 </html>
+
 
 
 
