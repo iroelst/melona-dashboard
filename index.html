@@ -92,6 +92,24 @@
     outline: none;
 }
 
+#loading-screen {
+    position: fixed; /* WAJIB: agar mengunci di layar */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000; /* Sesuaikan warna background */
+    z-index: 9999; /* Pastikan di atas segalanya */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tambahkan ini untuk memastikan saat disembunyikan benar-benar hilang */
+.hidden {
+    display: none !important;
+}
+
 		/* --- STYLING PLACEHOLDER (Abu-abu Terang) --- */
 ::placeholder { /* Chrome, Safari, Edge, Opera */
     color: #877573 !important;
@@ -498,29 +516,34 @@ function handleLogout() {
 auth.onAuthStateChanged(user => {
     const loginPage = document.getElementById('page-login');
     const appContent = document.getElementById('app-content');
-    const loadingScreen = document.getElementById('loading-screen'); // Ambil elemen loading
+    const loadingScreen = document.getElementById('loading-screen');
 
-    // FUNGSI UTAMA: Matikan loading screen segera setelah status auth diketahui
-if (loadingScreen) {
-        loadingScreen.style.display = 'none'; 
+    // 1. Matikan loading screen segera
+    if (loadingScreen) {
+        loadingScreen.style.setProperty('display', 'none', 'important');
+        loadingScreen.classList.add('hidden');
     }
 
     if (user) {
         console.log("Melona Auth: User Logged In", user.uid);
         
-        // Sembunyikan login, tampilkan dashboard
+        // Sembunyikan login, tampilkan aplikasi
         loginPage.classList.add('hidden');
         appContent.classList.remove('hidden');
+        
         const navItems = document.querySelectorAll('.nav-item');
-        switchPage('home', navItems[0]);
+        // Pastikan switchPage tidak error jika elemen belum siap
+        if(navItems.length > 0) switchPage('home', navItems[0]);
+        
         loadUserDevices(user.uid);
         
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('display-date').innerText = new Date().toLocaleDateString('id-ID', options);
+        const dateEl = document.getElementById('display-date');
+        if(dateEl) dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
+        
     } else {
         console.log("Melona Auth: No User");
-        
-        // Sembunyikan dashboard, tampilkan login
+        // Sembunyikan aplikasi, tampilkan login
         appContent.classList.add('hidden');
         loginPage.classList.remove('hidden');
     }
@@ -851,6 +874,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
