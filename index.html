@@ -551,19 +551,19 @@ function loadUserDevices(uid) {
         if (listContainer) listContainer.innerHTML = "";
 
         // --- LOGIKA DASHBOARD KOSONG ---
-        if (!devices) {
-            if (listContainer) {
-                listContainer.innerHTML = `
-                    <div class="col-12 text-center mt-5 p-4 glass-card">
-                        <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
-                        <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
-                        <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
-                        <button class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
-                    </div>
-                `;
-            }
-            return; 
-        }
+if (!devices) {
+    listContainer.innerHTML = `
+        <div class="col-12 text-center mt-5 p-4 glass-card">
+            <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
+            <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
+            <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
+            <button type="button" class="btn btn-success mt-3" onclick="showSyncModal()">
+                + Sinkronkan Alat Baru
+            </button>
+        </div>
+    `;
+    return; 
+}
 
         // --- RENDER JIKA ADA ALAT ---
         for (let id in devices) {
@@ -810,16 +810,15 @@ function saveNewDevice() {
 
 // Fungsi buka modal
 function showSyncModal() {
-    // Versi JavaScript murni untuk memicu modal Bootstrap 5
     const modalElement = document.getElementById('syncModal');
-    if (modalElement) {
-        const myModal = new bootstrap.Modal(modalElement);
-        myModal.show();
-    } else {
-        console.error("Elemen syncModal tidak ditemukan di HTML");
-        // Jika modal tidak muncul, kita gunakan SweetAlert sebagai alternatif input
-        claimDeviceSwal(); 
+    
+    // Inisialisasi ulang modal jika belum terdeteksi
+    let myModal = bootstrap.Modal.getInstance(modalElement);
+    if (!myModal) {
+        myModal = new bootstrap.Modal(modalElement);
     }
+    
+    myModal.show();
 }
 
 function saveFlowCal() {
@@ -858,7 +857,7 @@ function saveFlowCal() {
         <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-secondary">
         <h5 class="modal-title">Sinkronkan Alat Baru</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <input type="text" id="deviceId" class="form-control mb-2" placeholder="Masukkan ID Alat (contoh: MLN-XXXXXX)">
@@ -873,6 +872,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
