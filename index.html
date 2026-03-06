@@ -531,14 +531,24 @@ auth.onAuthStateChanged(user => {
 function loadUserDevices(uid) {
     db.ref(`users/${uid}/devices`).on('value', snapshot => {
         const devices = snapshot.val();
-        const selector = document.getElementById('device-selector');
         const listContainer = document.getElementById('device-list-container');
         
-        selector.innerHTML = "";
-        listContainer.innerHTML = "";
+        // --- LOGIKA DASHBOARD KOSONG ---
+        if (!devices) {
+            listContainer.innerHTML = `
+                <div class="text-center mt-5 p-4 glass-card">
+                    <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
+                    <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
+                    <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
+                    <button class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
+                </div>
+            `;
+            return; // Berhenti di sini jika tidak ada alat
+        }
 
-        if (devices) {
-            for (let id in devices) {
+        // Jika ada alat, lanjut ke kode render card Anda...
+        listContainer.innerHTML = ""; // Bersihkan dulu
+        for (let id in devices) {
                 // 1. Tambah ke Dropdown Detail
                 let opt = document.createElement('option');
                 opt.value = id;
@@ -550,7 +560,7 @@ const cardHtml = `
     <div class="col-12">
         <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-bold mb-0 text-white">${devices[id].name || id}</h6>
+                <h6 class="fw-bold mb-0 text-white">${devices[id].alias || id}</h6>
                 <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
             </div>
             
@@ -585,7 +595,12 @@ const cardHtml = `
                 // Di sini kita gunakan data dari Firebase jika Anda menyimpannya, 
                 // atau tunggu pesan MQTT masuk untuk mengupdate ID sum-ppm-${id}
             }
-            if (!currentDeviceId) switchDevice(Object.keys(devices)[0]);
+            if (devices) {
+    const deviceIds = Object.keys(devices);
+    if (!currentDeviceId && deviceIds.length > 0) {
+        switchDevice(deviceIds[0]);
+    }
+}
         }
     });
 }
@@ -748,6 +763,33 @@ function updateDashboard(data) {
             }, 10000);
         }
 
+		// Fungsi untuk menyimpan ke Firebase
+function saveNewDevice() {
+    const id = document.getElementById('deviceId').value;
+    const alias = document.getElementById('deviceAlias').value;
+    const userId = firebase.auth().currentUser.uid;
+
+    if(!id || !alias) {
+        alert("Harap isi semua kolom!");
+        return;
+    }
+
+    // Menulis ke Firebase secara otomatis
+    firebase.database().ref('users/' + userId + '/devices/' + id).set({
+        alias: alias,
+        added_at: Date.now(),
+        status: "offline"
+    }).then(() => {
+        alert("Alat " + alias + " berhasil disinkronkan!");
+        location.reload(); // Refresh halaman untuk memuat ulang daftar alat
+    });
+}
+
+// Fungsi buka modal
+function showSyncModal() {
+    new bootstrap.Modal(document.getElementById('syncModal')).show();
+}
+
 function saveFlowCal() {
     const a = parseFloat(document.getElementById('mlA').value);
     const b = parseFloat(document.getElementById('mlB').value);
@@ -788,9 +830,27 @@ function saveFlowCal() {
   }
 </script>
 
+<div class="modal fade" id="syncModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sinkronkan Alat Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="deviceId" class="form-control mb-2" placeholder="Masukkan ID Alat (contoh: MLN-XXXXXX)">
+        <input type="text" id="deviceAlias" class="form-control" placeholder="Beri Nama (contoh: GH1)">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveNewDevice()">Simpan Alat</button>
+      </div>
+    </div>
+  </div>
+</div>
 		
 </body>
 </html>
+
 
 
 
