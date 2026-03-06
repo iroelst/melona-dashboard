@@ -598,13 +598,13 @@ if (!devices) {
 
             // 2. Buat Card Ringkasan
             const cardHtml = `
-                <div class="col-12 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white">${devices[id].alias || devices[id].name || id}</h6>
                             <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
                         </div>
-										<div class="col-12 col-md-6 mb-3">
+										
         <div class="card bg-dark text-white border-secondary h-100 position-relative">
             <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2" 
                     onclick="deleteDevice('${id}')">
@@ -939,6 +939,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
