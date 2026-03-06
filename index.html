@@ -601,10 +601,10 @@ if (!devices) {
                 <div class="col-12 mb-3">
                     <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0 text-white">${devices[id].alias || devices[id].name || id}</h6>
-							            <button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
-                <i class="bi bi-trash"></i>
-            </button>
+                            <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
+							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
+                			<i class="bi bi-trash"></i>
+            				</button>
                             <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
                         </div>
                         
@@ -925,6 +925,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
