@@ -576,6 +576,7 @@ if (!devices) {
             </button>
         </div>
     `;
+	return
 } else {
             // --- KASUS 2: SUDAH ADA ALAT ---
             // Tampilkan tombol "+" minimalis di atas daftar kartu
@@ -599,6 +600,7 @@ if (!devices) {
             }
 
             // 2. Buat Card Ringkasan
+			const device = devices[id];
             const cardHtml = `
                 <div class="col-12 mb-3">
                     <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
@@ -901,6 +903,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
