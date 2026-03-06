@@ -651,13 +651,21 @@ function switchPage(pageId, el) {
     if (el) el.classList.add('active');
 }
 
-        function switchDevice(deviceId) {
-            if (!deviceId) return;
-            if (client && client.isConnected()) client.disconnect();
-            
-            currentDeviceId = deviceId;
-            connectMQTT(deviceId);
-        }
+function switchDevice(deviceId) {
+    if (!deviceId) return;
+    
+    // 1. Bersihkan koneksi lama agar tidak tumpang tindih
+    if (client && client.isConnected()) {
+        client.unsubscribe(`melona/${currentDeviceId}/telemetry`);
+        client.disconnect();
+    }
+    
+    // 2. Update variabel global ke perangkat baru
+    currentDeviceId = deviceId;
+    
+    // 3. Hubungkan kembali ke topik yang benar
+    connectMQTT(deviceId);
+}
 
         function connectMQTT(deviceId) {
             const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
@@ -850,6 +858,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
