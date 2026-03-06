@@ -531,75 +531,79 @@ function loadUserDevices(uid) {
     db.ref(`users/${uid}/devices`).on('value', snapshot => {
         const devices = snapshot.val();
         const listContainer = document.getElementById('device-list-container');
+        const selector = document.getElementById('device-selector'); // Pastikan ini ada
         
+        // Bersihkan kontainer sebelum mengisi
+        if (selector) selector.innerHTML = "";
+        if (listContainer) listContainer.innerHTML = "";
+
         // --- LOGIKA DASHBOARD KOSONG ---
         if (!devices) {
-            listContainer.innerHTML = `
-                <div class="text-center mt-5 p-4 glass-card">
-                    <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
-                    <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
-                    <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
-                    <button class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
-                </div>
-            `;
-            return; // Berhenti di sini jika tidak ada alat
+            if (listContainer) {
+                listContainer.innerHTML = `
+                    <div class="col-12 text-center mt-5 p-4 glass-card">
+                        <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
+                        <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
+                        <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
+                        <button class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
+                    </div>
+                `;
+            }
+            return; 
         }
 
-        // Jika ada alat, lanjut ke kode render card Anda...
-        listContainer.innerHTML = ""; // Bersihkan dulu
+        // --- RENDER JIKA ADA ALAT ---
         for (let id in devices) {
-                // 1. Tambah ke Dropdown Detail
+            // 1. Tambah ke Dropdown Selector (jika ada)
+            if (selector) {
                 let opt = document.createElement('option');
                 opt.value = id;
-                opt.innerText = devices[id].name || id;
+                opt.innerText = devices[id].alias || devices[id].name || id;
                 selector.appendChild(opt);
-
-                // 2. Buat Card Ringkasan untuk Page Home
-const cardHtml = `
-    <div class="col-12">
-        <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-bold mb-0 text-white">${devices[id].alias || id}</h6>
-                <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
-            </div>
-            
-            <div class="d-flex justify-content-between text-center align-items-center bg-dark bg-opacity-25 rounded-3 py-2 px-1">
-                <div class="flex-fill">
-                    <small class="label-sm d-block" style="font-size:0.55rem">HST</small>
-                    <span id="sum-hst-${id}" class="fw-bold small text-white">--</span>
-                </div>
-                <div class="flex-fill border-start border-secondary border-opacity-25">
-                    <small class="label-sm d-block" style="font-size:0.55rem">PPM</small>
-                    <span id="sum-ppm-${id}" class="fw-bold small text-green">--</span>
-                </div>
-                <div class="flex-fill border-start border-secondary border-opacity-25">
-                    <small class="label-sm d-block" style="font-size:0.55rem">pH</small>
-                    <span id="sum-ph-${id}" class="fw-bold small text-blue">--</span>
-                </div>
-                <div class="flex-fill border-start border-secondary border-opacity-25">
-                    <small class="label-sm d-block" style="font-size:0.55rem">Suhu Nutrisi</small>
-                    <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem"> °C</small>
-                </div>
-            </div>
-
-            <div class="text-center mt-2">
-                <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
-            </div>
-        </div>
-    </div>
-`;
-                listContainer.innerHTML += cardHtml;
-
-                // 3. Listen data real-time untuk setiap card (via MQTT atau DB)
-                // Di sini kita gunakan data dari Firebase jika Anda menyimpannya, 
-                // atau tunggu pesan MQTT masuk untuk mengupdate ID sum-ppm-${id}
             }
-            if (devices) {
-    const deviceIds = Object.keys(devices);
-    if (!currentDeviceId && deviceIds.length > 0) {
-        switchDevice(deviceIds[0]);
-    }
-}
+
+            // 2. Buat Card Ringkasan
+            const cardHtml = `
+                <div class="col-12 mb-3">
+                    <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-white">${devices[id].alias || devices[id].name || id}</h6>
+                            <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between text-center align-items-center bg-dark bg-opacity-25 rounded-3 py-2 px-1">
+                            <div class="flex-fill">
+                                <small class="label-sm d-block" style="font-size:0.55rem">HST</small>
+                                <span id="sum-hst-${id}" class="fw-bold small text-white">--</span>
+                            </div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25">
+                                <small class="label-sm d-block" style="font-size:0.55rem">PPM</small>
+                                <span id="sum-ppm-${id}" class="fw-bold small text-green">--</span>
+                            </div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25">
+                                <small class="label-sm d-block" style="font-size:0.55rem">pH</small>
+                                <span id="sum-ph-${id}" class="fw-bold small text-blue">--</span>
+                            </div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25">
+                                <small class="label-sm d-block" style="font-size:0.55rem">Suhu</small>
+                                <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem"> °C</small>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-2">
+                            <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            if (listContainer) listContainer.innerHTML += cardHtml;
+        }
+
+        // Auto-switch ke perangkat pertama jika belum ada yang terpilih
+        const deviceIds = Object.keys(devices);
+        if (!currentDeviceId && deviceIds.length > 0) {
+            switchDevice(deviceIds[0]);
+        }
     });
 }
 
@@ -826,7 +830,8 @@ function saveFlowCal() {
             }
         }, 5000);
     </script>
-<script>
+/*
+ <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service_worker.js')
@@ -835,6 +840,7 @@ function saveFlowCal() {
     });
   }
 </script>
+*/
 
 <div class="modal fade" id="syncModal" tabindex="-1">
   <div class="modal-dialog">
@@ -856,6 +862,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
