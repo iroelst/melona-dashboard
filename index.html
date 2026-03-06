@@ -526,6 +526,19 @@ auth.onAuthStateChanged(user => {
         console.log("Melona Auth: Login Berhasil", user.uid);
         loginPage.classList.add('hidden');
         appContent.classList.remove('hidden');
+
+		// --- UPDATE TANGGAL DI SINI ---
+        const dateEl = document.getElementById('display-date');
+        if (dateEl) {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
+            dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
+        }
         
         // Load data alat milik user
         loadUserDevices(user.uid);
@@ -660,6 +673,12 @@ function switchPage(pageId, el) {
         deviceHeader.classList.add('hidden'); // Sembunyi saat di daftar semua GH
     } else {
         deviceHeader.classList.remove('hidden'); // Tampil saat di detail alat atau settings
+    }
+
+	const dateEl = document.getElementById('display-date');
+    if (dateEl && dateEl.innerText === "Memuat...") {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
     }
     
     // Update navigasi bawah
@@ -873,6 +892,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
