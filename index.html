@@ -763,33 +763,31 @@ function switchDevice(deviceId) {
             };
 
 client.onMessageArrived = (message) => {
-    console.log("Pesan Masuk: " + message.payloadString);
-    
-    // 1. Ambil ID dari topik (misal: "melona/GH1/telemetry")
-    // Bagian ini akan menghasilkan "GH1"
+    // Memecah topik untuk mendapatkan ID, misal dari: "melona/MLN-123/telemetry"
     const topicParts = message.destinationName.split("/");
     const deviceId = topicParts[1]; 
+    const payload = message.payloadString;
 
-    try {
-        const data = JSON.parse(message.payloadString);
-        lastSeen = Date.now();
-        
-        // 2. Kirim data DAN ID-nya ke fungsi update
-        updateDashboard(data, deviceId);
-        
-    } catch (e) { console.error("JSON Error", e); }
-};
-
-            client.connect({
-                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
-                onSuccess: () => {
-                    client.subscribe(`melona/${deviceId}/telemetry`);
-                    document.getElementById('mqtt-status').innerText = "Online ●";
-                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
-                },
-                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
-            });
+    if (message.destinationName.endsWith("/telemetry")) {
+        try {
+            const data = JSON.parse(payload);
+            lastSeen = Date.now();
+            
+            // Panggil fungsi yang baru saja Anda perbaiki
+            updateDashboard(data, deviceId);
+            
+        } catch (e) { 
+            console.error("JSON Error:", e); 
         }
+    } else if (message.destinationName.endsWith("/status")) {
+        // Logika untuk status online/offline
+        const statusEl = document.getElementById(`status-${deviceId}`);
+        if (statusEl) {
+            statusEl.innerText = (payload === 'online') ? "Online ●" : "Offline";
+            statusEl.className = (payload === 'online') ? "badge bg-dark text-green small" : "badge bg-dark text-secondary small";
+        }
+    }
+};
 
 function updateDashboard(data, deviceId) {
     // 1. UPDATE HALAMAN HOME (List Alat)
@@ -951,6 +949,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
