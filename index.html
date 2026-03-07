@@ -774,7 +774,8 @@ client.onMessageArrived = (message) => {
             lastSeen = Date.now();
             
             // Panggil fungsi yang baru saja Anda perbaiki
-            updateDashboard(data, deviceId);
+            // updateDashboard(data, deviceId);
+			updateDashboardAndSave(data, deviceId);
             
         } catch (e) { 
             console.error("JSON Error:", e); 
@@ -798,6 +799,33 @@ client.onMessageArrived = (message) => {
                 onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
             });
         }
+
+		function updateDashboardAndSave(data, deviceId) {
+    // 1. Update tampilan (Halaman Home & Dashboard)
+    updateDashboard(data, deviceId);
+
+    // 2. Catat ke Firebase agar saat refresh data tidak hilang
+    const userId = firebase.auth().currentUser.uid;
+    firebase.database().ref(`users/${userId}/devices/${deviceId}/last_data`).set(data);
+}
+
+		function loadInitialData() {
+    const userId = firebase.auth().currentUser.uid;
+    firebase.database().ref(`users/${userId}/devices`).once('value', snapshot => {
+        snapshot.forEach(child => {
+            const deviceId = child.key;
+            const lastData = child.val().last_data; // Mengambil data yang tadi dicatat
+
+            if (lastData) {
+                // Tampilkan data terakhir yang tersimpan di Firebase ke layar
+                updateDashboard(lastData, deviceId);
+            }
+        });
+    });
+}
+
+// Panggil fungsi ini tepat setelah user login atau saat aplikasi siap
+loadInitialData();
 
 function updateDashboard(data, deviceId) {
     // 1. UPDATE HALAMAN HOME (List Alat)
@@ -959,6 +987,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
