@@ -551,7 +551,7 @@ auth.onAuthStateChanged(user => {
             // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
             dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
         }
-        
+        connectMQTT(user.uid);
         // Load data alat milik user
         loadUserDevices(user.uid);
         
@@ -765,6 +765,19 @@ function switchDevice(deviceId) {
     connectMQTT(deviceId);
 }
 
+function initAllSubscriptions(uid) {
+    db.ref(`users/${uid}/devices`).once('value', snapshot => {
+        const devices = snapshot.val();
+        if (devices) {
+            for (let id in devices) {
+                client.subscribe(`melona/${id}/telemetry`);
+                client.subscribe(`melona/${id}/status`);
+                console.log("Subscribed ke:", id);
+            }
+        }
+    });
+}
+
 function connectMQTT(deviceId) {
     const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
     client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
@@ -814,7 +827,8 @@ function connectMQTT(deviceId) {
             client.subscribe(`melona/${deviceId}/telemetry`);
             client.subscribe(`melona/${deviceId}/status`);
             
-            document.getElementById('mqtt-status').innerText = "Connected";
+            document.getElementById('mqtt-status').innerText = "Online";
+			initAllSubscriptions(uid);
         },
         onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
     });
@@ -978,6 +992,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
