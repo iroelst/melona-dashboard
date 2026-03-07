@@ -554,7 +554,8 @@ auth.onAuthStateChanged(user => {
         
         // Load data alat milik user
         loadUserDevices(user.uid);
-        
+        loadInitialData(); 
+
         // Reset navigasi ke home
         const navItems = document.querySelectorAll('.nav-item');
         if(navItems.length > 0) switchPage('home', navItems[0]);
@@ -825,7 +826,7 @@ client.onMessageArrived = (message) => {
 }
 
 // Panggil fungsi ini tepat setelah user login atau saat aplikasi siap
-loadInitialData();
+
 
 function updateDashboard(data, deviceId) {
     // 1. UPDATE HALAMAN HOME (List Alat)
@@ -987,6 +988,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
