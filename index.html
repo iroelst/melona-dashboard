@@ -597,8 +597,7 @@ if (!devices) {
         class="fixed-add-btn">
     +
 </button>
-
-            `;
+`;
 }
 
         // --- RENDER JIKA ADA ALAT ---
@@ -649,6 +648,21 @@ if (!devices) {
        	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
+// 3. PASANG LISTENER DI SINI (Di dalam loop agar 'id' dikenali)
+            db.ref(`users/${uid}/devices/${id}/status`).on('value', snapshot => {
+                const status = snapshot.val(); 
+                const statusEl = document.getElementById(`status-${id}`);
+                
+                if (statusEl) {
+                    if (status === 'online') {
+                        statusEl.innerText = "Online ●";
+                        statusEl.className = "badge bg-dark text-green small";
+                    } else {
+                        statusEl.innerText = "Offline";
+                        statusEl.className = "badge bg-dark text-secondary small";
+                    }
+                }
+            });
         }
 
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
@@ -940,6 +954,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
