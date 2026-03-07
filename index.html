@@ -554,8 +554,7 @@ auth.onAuthStateChanged(user => {
         
         // Load data alat milik user
         loadUserDevices(user.uid);
-        loadInitialData(); 
-
+        
         // Reset navigasi ke home
         const navItems = document.querySelectorAll('.nav-item');
         if(navItems.length > 0) switchPage('home', navItems[0]);
@@ -763,34 +762,16 @@ function switchDevice(deviceId) {
                 }
             };
 
-client.onMessageArrived = (message) => {
-    // Memecah topik untuk mendapatkan ID, misal dari: "melona/MLN-123/telemetry"
-    const topicParts = message.destinationName.split("/");
-    const deviceId = topicParts[1]; 
-    const payload = message.payloadString;
+            client.onMessageArrived = (message) => {
+				console.log("Pesan Masuk: " + message.payloadString);
+                try {
+                    const data = JSON.parse(message.payloadString);
+                    lastSeen = Date.now();
+                    updateDashboard(data);
+                } catch (e) { console.error("JSON Error", e); }
+            };
 
-    if (message.destinationName.endsWith("/telemetry")) {
-        try {
-            const data = JSON.parse(payload);
-            lastSeen = Date.now();
-            
-            // Panggil fungsi yang baru saja Anda perbaiki
-            // updateDashboard(data, deviceId);
-			updateDashboardAndSave(data, deviceId);
-            
-        } catch (e) { 
-            console.error("JSON Error:", e); 
-        }
-    } else if (message.destinationName.endsWith("/status")) {
-        // Logika untuk status online/offline
-        const statusEl = document.getElementById(`status-${deviceId}`);
-        if (statusEl) {
-            statusEl.innerText = (payload === 'online') ? "Online ●" : "Offline";
-            statusEl.className = (payload === 'online') ? "badge bg-dark text-green small" : "badge bg-dark text-secondary small";
-        }
-    }
-};
-	            client.connect({
+            client.connect({
                 useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
                 onSuccess: () => {
                     client.subscribe(`melona/${deviceId}/telemetry`);
@@ -801,81 +782,52 @@ client.onMessageArrived = (message) => {
             });
         }
 
-		function updateDashboardAndSave(data, deviceId) {
-    // 1. Update tampilan (Halaman Home & Dashboard)
-    updateDashboard(data, deviceId);
+function updateDashboard(data) {
+    // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
+    document.getElementById('hst-val').innerText = data.hst ?? "--";
+    document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
+    document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+    document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    
+    document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+    document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
+    
+    document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+    document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+    
+    // Data Dosing Harian (d_) dan Total (t_)
+    document.getElementById('d-ab').innerText = data.d_ab ?? "0";
+    document.getElementById('d-phd').innerText = data.d_phd ?? "0";
+    document.getElementById('d-phu').innerText = data.d_phu ?? "0";
+    document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+    document.getElementById('t-phd').innerText = data.t_phd ?? "0";
+    document.getElementById('t-phu').innerText = data.t_phu ?? "0";
 
-    // 2. Catat ke Firebase agar saat refresh data tidak hilang
-    const userId = firebase.auth().currentUser.uid;
-    firebase.database().ref(`users/${userId}/devices/${deviceId}/last_data`).set(data);
-}
-
-		function loadInitialData() {
-    const userId = firebase.auth().currentUser.uid;
-    firebase.database().ref(`users/${userId}/devices`).once('value', snapshot => {
-        snapshot.forEach(child => {
-            const deviceId = child.key;
-            const lastData = child.val().last_data; // Mengambil data yang tadi dicatat
-
-            if (lastData) {
-                // Tampilkan data terakhir yang tersimpan di Firebase ke layar
-                updateDashboard(lastData, deviceId);
-            }
-        });
-    });
-}
-
-// Panggil fungsi ini tepat setelah user login atau saat aplikasi siap
-
-
-function updateDashboard(data, deviceId) {
-    // 1. UPDATE HALAMAN HOME (List Alat)
-    // Bagian ini akan selalu berjalan untuk setiap alat yang mengirim data
-    const sHst = document.getElementById(`sum-hst-${deviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
-    const sPh = document.getElementById(`sum-ph-${deviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`);
+    // Status Sistem (Maintenance Mode)
+    const banner = document.getElementById('maintenance-banner');
+    const brand = document.getElementById('brand-text');
+    if (data.sys === "OFF") {
+        banner.classList.remove('hidden');
+        brand.innerHTML = 'Melona <span class="text-red">Maintenance</span>';
+    } else {
+        banner.classList.add('hidden');
+        brand.innerHTML = 'Melona <span class="text-green">System</span>';
+    }
+// --- LOGIKA UPDATE RINGKASAN DI HOME ---
+    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
+    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
+    const sStatus = document.getElementById(`status-${currentDeviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
     if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
     if(sTemp) sTemp.innerText = data.t_air ?? "--";
+    
     if(sStatus) {
         sStatus.innerText = "Online ●";
         sStatus.className = "badge bg-dark text-green small";
-    }
-
-    // 2. UPDATE HALAMAN DASHBOARD UTAMA
-    // Bagian ini HANYA berjalan jika user sedang melihat alat yang sama
-    if (deviceId === currentDeviceId) {
-        document.getElementById('hst-val').innerText = data.hst ?? "--";
-        document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
-        document.getElementById('ppm-val').innerText = data.ppm ?? "--";
-        document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-        
-        document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
-        document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
-        
-        document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
-        document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
-        
-        document.getElementById('d-ab').innerText = data.d_ab ?? "0";
-        document.getElementById('d-phd').innerText = data.d_phd ?? "0";
-        document.getElementById('d-phu').innerText = data.d_phu ?? "0";
-        document.getElementById('t-ab').innerText = data.t_ab ?? "0";
-        document.getElementById('t-phd').innerText = data.t_phd ?? "0";
-        document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-
-        const banner = document.getElementById('maintenance-banner');
-        const brand = document.getElementById('brand-text');
-        if (data.sys === "OFF") {
-            banner.classList.remove('hidden');
-            brand.innerHTML = 'Melona <span class="text-red">Maintenance</span>';
-        } else {
-            banner.classList.add('hidden');
-            brand.innerHTML = 'Melona <span class="text-green">System</span>';
-        }
     }
 }
 
@@ -988,11 +940,6 @@ function saveFlowCal() {
 		
 </body>
 </html>
-
-
-
-
-
 
 
 
