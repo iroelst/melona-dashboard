@@ -791,18 +791,20 @@ function connectMQTT(deviceId) {
         }
     };
 
-    client.onMessageArrived = (message) => {
-        const topic = message.destinationName;
-        const payload = message.payloadString;
-        
-        // 1. Tangani Telemetri (JSON)
-        if (topic.endsWith("/telemetry")) {
-            try {
-                const data = JSON.parse(payload);
-                lastSeen = Date.now();
-                updateDashboard(data);
-            } catch (e) { console.error("JSON Error", e); }
-        } 
+client.onMessageArrived = (message) => {
+    const topic = message.destinationName; // contoh: "melona/MLN-F4E9D4/telemetry"
+    const payload = message.payloadString;
+    const topicParts = topic.split("/");
+    const deviceId = topicParts[1]; // Mengambil "MLN-F4E9D4"
+
+    if (topic.endsWith("/telemetry")) {
+        try {
+            const data = JSON.parse(payload);
+            lastSeen = Date.now();
+            // Panggil fungsi update baru yang menerima deviceId
+            updateDashboardDynamic(deviceId, data);
+        } catch (e) { console.error("JSON Error", e); }
+    }
         // 2. Tangani Status (String "online"/"offline")
         else if (topic.endsWith("/status")) {
             const statusEl = document.getElementById(`status-${deviceId}`);
@@ -832,6 +834,37 @@ function connectMQTT(deviceId) {
         },
         onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
     });
+}
+
+function updateDashboardDynamic(id, data) {
+    // 1. Update Kartu di Halaman Home (Selalu Update)
+    const sHst = document.getElementById(`sum-hst-${id}`);
+    const sPpm = document.getElementById(`sum-ppm-${id}`);
+    const sPh = document.getElementById(`sum-ph-${id}`);
+    const sTemp = document.getElementById(`sum-temp-${id}`);
+
+    if(sHst) sHst.innerText = data.hst ?? "--";
+    if(sPpm) sPpm.innerText = data.ppm ?? "--";
+    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    if(sTemp) sTemp.innerText = data.t_air ?? "--";
+
+    // 2. Update Halaman Utama JIKA alat ini yang sedang dipilih (currentDeviceId)
+    if (id === currentDeviceId) {
+        document.getElementById('hst-val').innerText = data.hst ?? "--";
+        document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+        document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+        document.getElementById('tair-val').innerText = data.t_air ?? "--";
+        document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+        document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
+        document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+        document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+    document.getElementById('d-ab').innerText = data.d_ab ?? "0";
+    document.getElementById('d-phd').innerText = data.d_phd ?? "0";
+    document.getElementById('d-phu').innerText = data.d_phu ?? "0";
+    document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+    document.getElementById('t-phd').innerText = data.t_phd ?? "0";
+    document.getElementById('t-phu').innerText = data.t_phu ?? "0";
+    }
 }
 
 function updateDashboard(data) {
@@ -992,6 +1025,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
