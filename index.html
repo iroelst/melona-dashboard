@@ -690,11 +690,29 @@ function deleteDevice(deviceId) {
 		
 // Fungsi Klik Detail
 function viewDetail(id) {
-    document.getElementById('device-selector').value = id;
-    switchDevice(id);
-    // Pindah ke halaman dashboard
+    // 1. Update ID global ke alat yang diklik
+    currentDeviceId = id; 
+
+    // 2. Reset tampilan ke "--" agar user tahu data sedang dimuat
+    // Ini mencegah data GH1 terlihat saat kita baru saja klik GH2
+    const fieldsToReset = [
+        'hst-val', 'tair-val', 'ppm-val', 'ph-val', 
+        'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'
+    ];
+    
+    fieldsToReset.forEach(idVal => {
+        const el = document.getElementById(idVal);
+        if (el) el.innerText = "--";
+    });
+
+    // 3. Pindah ke halaman dashboard
     const navItems = document.querySelectorAll('.nav-item');
-    switchPage('dashboard', navItems[1]); // Nav ke Dashboard
+    if (navItems.length > 1) {
+        switchPage('dashboard', navItems[1]); 
+    }
+
+    // 4. Panggil switchDevice untuk menangani subscribe MQTT dan ambil data Firebase
+    switchDevice(id);
 }
 
         function claimDevice() {
@@ -743,19 +761,34 @@ function switchPage(pageId, el) {
 function switchDevice(deviceId) {
     if (!deviceId) return;
     
-    // 1. Bersihkan koneksi lama agar tidak tumpang tindih
+    // 1. Jika sudah ada koneksi, cukup unsubscribe topik lama, tidak perlu disconnect
     if (client && client.isConnected()) {
-        client.unsubscribe(`melona/${currentDeviceId}/telemetry`);
-        client.disconnect();
+        if (currentDeviceId) {
+            client.unsubscribe(`melona/${currentDeviceId}/telemetry`);
+        }
     }
     
-    // 2. Update variabel global ke perangkat baru
+    // 2. Update ID global ke perangkat baru
     currentDeviceId = deviceId;
     
-    // 3. Hubungkan kembali ke topik yang benar
-    connectMQTT(deviceId);
-}
+    // 3. Subscribe ke topik perangkat baru tanpa harus connect ulang
+    if (client && client.isConnected()) {
+        client.subscribe(`melona/${deviceId}/telemetry`);
+        console.log("Berhasil pindah ke topik:", `melona/${deviceId}/telemetry`);
+    }
 
+    // 4. Tarik data instan dari Firebase agar dashboard tidak kosong
+    const uid = firebase.auth().currentUser.uid;
+    db.ref(`users/${uid}/devices/${deviceId}/last_data`).once('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+            updateDashboard(data, deviceId);
+        } else {
+            // Jika data belum ada, reset tampilan ke "--"
+            updateDashboard({}, deviceId);
+        }
+    });
+}
         function connectMQTT(deviceId) {
             const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
             client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
@@ -967,6 +1000,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
