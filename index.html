@@ -650,6 +650,13 @@ if (!devices) {
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
         }
+		db.ref(`users/${uid}/devices/${id}`).once('value', snapshot => {
+                const deviceData = snapshot.val();
+                if (deviceData && deviceData.last_data) {
+                    // Update tampilan dengan data terakhir yang disimpan
+                    updateDashboard(deviceData.last_data, id);
+                }
+            });
 
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
         const deviceIds = Object.keys(devices);
@@ -762,14 +769,15 @@ function switchDevice(deviceId) {
                 }
             };
 
-            client.onMessageArrived = (message) => {
-				console.log("Pesan Masuk: " + message.payloadString);
-                try {
-                    const data = JSON.parse(message.payloadString);
-                    lastSeen = Date.now();
-                    updateDashboard(data);
-                } catch (e) { console.error("JSON Error", e); }
-            };
+client.onMessageArrived = (message) => {
+    const topicParts = message.destinationName.split("/");
+    const deviceId = topicParts[1]; // Ambil ID dari topik, misal: "MLN-F4E9D4"
+    const data = JSON.parse(message.payloadString);
+    
+    lastSeen = Date.now();
+    // Kirim deviceId ke fungsi agar ia tahu targetnya
+    updateDashboard(data, deviceId); 
+};
 
             client.connect({
                 useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
@@ -782,7 +790,8 @@ function switchDevice(deviceId) {
             });
         }
 
-function updateDashboard(data) {
+function updateDashboard(data, deviceId) {
+	if (deviceId === currentDeviceId) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
@@ -802,7 +811,7 @@ function updateDashboard(data) {
     document.getElementById('t-ab').innerText = data.t_ab ?? "0";
     document.getElementById('t-phd').innerText = data.t_phd ?? "0";
     document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-
+	
     // Status Sistem (Maintenance Mode)
     const banner = document.getElementById('maintenance-banner');
     const brand = document.getElementById('brand-text');
@@ -813,12 +822,13 @@ function updateDashboard(data) {
         banner.classList.add('hidden');
         brand.innerHTML = 'Melona <span class="text-green">System</span>';
     }
+	}
 // --- LOGIKA UPDATE RINGKASAN DI HOME ---
-    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
-    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
-    const sStatus = document.getElementById(`status-${currentDeviceId}`);
+    const sHst = document.getElementById(`sum-hst-${deviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
+    const sPh = document.getElementById(`sum-ph-${deviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
+    const sStatus = document.getElementById(`status-${deviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
@@ -829,6 +839,29 @@ function updateDashboard(data) {
         sStatus.innerText = "Online ●";
         sStatus.className = "badge bg-dark text-green small";
     }
+}
+
+		function loadInitialData() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    // 1. Ambil referensi ke daftar perangkat milik user
+    const devicesRef = db.ref(`users/${user.uid}/devices`);
+    
+    devicesRef.once('value', (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+            const deviceId = childSnapshot.key;
+            const deviceData = childSnapshot.val();
+
+            // 2. Cek apakah ada data 'last_data' yang tersimpan
+            if (deviceData.last_data) {
+                console.log("Memuat data awal untuk:", deviceId);
+                
+                // 3. Update dashboard tanpa perlu menunggu pesan MQTT masuk
+                updateDashboard(deviceData.last_data, deviceId);
+            }
+        });
+    });
 }
 
         // MQTT Command Send
@@ -940,6 +973,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
