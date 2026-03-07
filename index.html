@@ -50,26 +50,6 @@
             transition: all 0.3s ease;
         }
 
-		.fixed-add-btn {
-    position: fixed;
-    bottom: 100px; /* Jarak dari bawah */
-    left: 50%;    /* Posisikan mulai dari tengah */
-    transform: translateX(-50%); /* Geser balik sebesar setengah lebar tombol agar benar-benar presisi di tengah */
-    z-index: 1000;
-    
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 24px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background-color: #198754; /* Warna hijau bootstrap */
-    color: white;
-}
-
         .label-sm { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .glow-green { color: var(--accent-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
         .glow-blue { color: var(--accent-blue); text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
@@ -341,6 +321,14 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="glass-card border border-primary border-dashed">
+                    <h6 class="fw-bold"><i class="bi bi-plus-circle"></i> Sinkron Alat Baru</h6>
+                    <div class="input-group">
+                        <input type="text" id="new-device-id" class="form-control form-control-sm" placeholder="Masukkan ID Alat">
+                        <button onclick="claimDevice()" class="btn btn-primary btn-sm">SINKRONKAN</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -592,11 +580,9 @@ if (!devices) {
             // --- KASUS 2: SUDAH ADA ALAT ---
             // Tampilkan tombol "+" minimalis di atas daftar kartu
             listContainer.innerHTML = `
-                <button type="button" 
-        onclick="showSyncModal()" 
-        class="fixed-add-btn">
-    +
-</button>
+                <div class="col-12 mb-3 text-end">
+                    <button type="button" onclick="showSyncModal()" class="btn btn-success">+</button>
+                </div>
             `;
 }
 
@@ -612,8 +598,8 @@ if (!devices) {
 
             // 2. Buat Card Ringkasan
             const cardHtml = `
-                <div class="col-12 mb-1">
-                    <div class="glass-card p-3 border-start border-success border-4">
+                <div class="col-12 mb-3">
+                    <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
 							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
@@ -640,23 +626,16 @@ if (!devices) {
                                 <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem"> °C</small>
                             </div>
                         </div>
-						<hr class="border-secondary my-2">
+
                         <div class="text-center mt-2">
-                            <small class="text-secondary" onclick="viewDetail('${id}')" style="cursor:pointer; font-size: 0.75rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
+                            <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
                         </div>
                     </div>
        	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
-			
-			db.ref(`users/${uid}/devices/${id}`).once('value', snapshot => {
-                const deviceData = snapshot.val();
-                if (deviceData && deviceData.last_data) {
-                    console.log("Data ditemukan untuk ID:", id);
-                    updateDashboard(deviceData.last_data, id);
-                }
-            });
         }
+
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
         const deviceIds = Object.keys(devices);
         if (!currentDeviceId && deviceIds.length > 0) {
@@ -690,29 +669,11 @@ function deleteDevice(deviceId) {
 		
 // Fungsi Klik Detail
 function viewDetail(id) {
-    // 1. Update ID global ke alat yang diklik
-    currentDeviceId = id; 
-
-    // 2. Reset tampilan ke "--" agar user tahu data sedang dimuat
-    // Ini mencegah data GH1 terlihat saat kita baru saja klik GH2
-    const fieldsToReset = [
-        'hst-val', 'tair-val', 'ppm-val', 'ph-val', 
-        'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'
-    ];
-    
-    fieldsToReset.forEach(idVal => {
-        const el = document.getElementById(idVal);
-        if (el) el.innerText = "--";
-    });
-
-    // 3. Pindah ke halaman dashboard
-    const navItems = document.querySelectorAll('.nav-item');
-    if (navItems.length > 1) {
-        switchPage('dashboard', navItems[1]); 
-    }
-
-    // 4. Panggil switchDevice untuk menangani subscribe MQTT dan ambil data Firebase
+    document.getElementById('device-selector').value = id;
     switchDevice(id);
+    // Pindah ke halaman dashboard
+    const navItems = document.querySelectorAll('.nav-item');
+    switchPage('dashboard', navItems[1]); // Nav ke Dashboard
 }
 
         function claimDevice() {
@@ -760,29 +721,20 @@ function switchPage(pageId, el) {
 
 function switchDevice(deviceId) {
     if (!deviceId) return;
-
-    // 1. Unsubscribe topik lama agar data tidak campur
+    
+    // 1. Bersihkan koneksi lama agar tidak tumpang tindih
     if (client && client.isConnected()) {
         client.unsubscribe(`melona/${currentDeviceId}/telemetry`);
+        client.disconnect();
     }
-
-    // 2. Update ID global
+    
+    // 2. Update variabel global ke perangkat baru
     currentDeviceId = deviceId;
-
-    // 3. Subscribe ke topik baru (REAL-TIME)
-    if (client && client.isConnected()) {
-        client.subscribe(`melona/${deviceId}/telemetry`);
-    }
-
-    // 4. Ambil data terakhir dari Firebase (untuk tampilan instan saat pertama kali pindah)
-    const uid = firebase.auth().currentUser.uid;
-    db.ref(`users/${uid}/devices/${deviceId}/last_data`).once('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-            updateDashboard(data, deviceId);
-        }
-    });
+    
+    // 3. Hubungkan kembali ke topik yang benar
+    connectMQTT(deviceId);
 }
+
         function connectMQTT(deviceId) {
             const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
             client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
@@ -795,23 +747,14 @@ function switchDevice(deviceId) {
                 }
             };
 
-client.onMessageArrived = (message) => {
-    console.log("Pesan MQTT diterima:", message.destinationName, message.payloadString); // <--- TAMBAHKAN INI
-    
-    const topicParts = message.destinationName.split("/");
-    const deviceId = topicParts[1];
-    
-    try {
-        const data = JSON.parse(message.payloadString);
-        lastSeen = Date.now();
-        
-        // Panggil fungsi update
-        updateDashboard(data, deviceId);
-        
-    } catch (e) {
-        console.error("Gagal parsing JSON:", e);
-    }
-};
+            client.onMessageArrived = (message) => {
+				console.log("Pesan Masuk: " + message.payloadString);
+                try {
+                    const data = JSON.parse(message.payloadString);
+                    lastSeen = Date.now();
+                    updateDashboard(data);
+                } catch (e) { console.error("JSON Error", e); }
+            };
 
             client.connect({
                 useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
@@ -824,8 +767,7 @@ client.onMessageArrived = (message) => {
             });
         }
 
-function updateDashboard(data, deviceId) {
-	if (deviceId === currentDeviceId) {
+function updateDashboard(data) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
@@ -845,7 +787,7 @@ function updateDashboard(data, deviceId) {
     document.getElementById('t-ab').innerText = data.t_ab ?? "0";
     document.getElementById('t-phd').innerText = data.t_phd ?? "0";
     document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-	
+
     // Status Sistem (Maintenance Mode)
     const banner = document.getElementById('maintenance-banner');
     const brand = document.getElementById('brand-text');
@@ -856,13 +798,12 @@ function updateDashboard(data, deviceId) {
         banner.classList.add('hidden');
         brand.innerHTML = 'Melona <span class="text-green">System</span>';
     }
-	}
 // --- LOGIKA UPDATE RINGKASAN DI HOME ---
-    const sHst = document.getElementById(`sum-hst-${deviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
-    const sPh = document.getElementById(`sum-ph-${deviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`);
+    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
+    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
+    const sStatus = document.getElementById(`status-${currentDeviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
@@ -873,24 +814,6 @@ function updateDashboard(data, deviceId) {
         sStatus.innerText = "Online ●";
         sStatus.className = "badge bg-dark text-green small";
     }
-}
-
-function loadInitialData() {
-    const userId = firebase.auth().currentUser.uid;
-    console.log("Mencoba mengambil data terakhir dari Firebase...");
-
-    db.ref(`users/${userId}/devices`).once('value', snapshot => {
-        snapshot.forEach(childSnapshot => {
-            const deviceId = childSnapshot.key;
-            const deviceData = childSnapshot.val();
-
-            // Cek apakah ada last_data tersimpan
-            if (deviceData && deviceData.last_data) {
-                console.log("Data ditemukan untuk:", deviceId, deviceData.last_data);
-                updateDashboard(deviceData.last_data, deviceId);
-            }
-        });
-    });
 }
 
         // MQTT Command Send
@@ -1002,6 +925,51 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
