@@ -796,26 +796,20 @@ function switchDevice(deviceId) {
             };
 
 client.onMessageArrived = (message) => {
-    // 1. Ambil ID dari topik (melona/DEVICE_ID/telemetry)
+    console.log("Pesan MQTT diterima:", message.destinationName, message.payloadString); // <--- TAMBAHKAN INI
+    
     const topicParts = message.destinationName.split("/");
     const deviceId = topicParts[1];
     
-    // 2. Parsing payload
     try {
         const data = JSON.parse(message.payloadString);
         lastSeen = Date.now();
         
-        // 3. Update tampilan secara instan (Real-time)
+        // Panggil fungsi update
         updateDashboard(data, deviceId);
-
-        // 4. Update Firebase hanya jika data yang masuk valid
-        // Ini memastikan saat refresh nanti, data tetap muncul
-        const userId = firebase.auth().currentUser?.uid;
-        if (userId) {
-            db.ref(`users/${userId}/devices/${deviceId}/last_data`).set(data);
-        }
+        
     } catch (e) {
-        console.error("Gagal parsing JSON MQTT:", e);
+        console.error("Gagal parsing JSON:", e);
     }
 };
 
@@ -1008,6 +1002,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
