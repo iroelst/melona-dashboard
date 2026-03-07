@@ -597,7 +597,6 @@ if (!devices) {
         class="fixed-add-btn">
     +
 </button>
-
             `;
 }
 
@@ -649,14 +648,15 @@ if (!devices) {
        	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
-		db.ref(`users/${uid}/devices/${id}`).once('value', snapshot => {
+			
+			db.ref(`users/${uid}/devices/${id}`).once('value', snapshot => {
                 const deviceData = snapshot.val();
                 if (deviceData && deviceData.last_data) {
-                    // Update tampilan dengan data terakhir yang disimpan
+                    console.log("Data ditemukan untuk ID:", id);
                     updateDashboard(deviceData.last_data, id);
                 }
             });
-		}
+        }
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
         const deviceIds = Object.keys(devices);
         if (!currentDeviceId && deviceIds.length > 0) {
@@ -967,6 +967,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
