@@ -788,6 +788,16 @@ client.onMessageArrived = (message) => {
         }
     }
 };
+	            client.connect({
+                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
+                onSuccess: () => {
+                    client.subscribe(`melona/${deviceId}/telemetry`);
+                    document.getElementById('mqtt-status').innerText = "Online ●";
+                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
+                },
+                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+            });
+        }
 
 function updateDashboard(data, deviceId) {
     // 1. UPDATE HALAMAN HOME (List Alat)
@@ -949,6 +959,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
