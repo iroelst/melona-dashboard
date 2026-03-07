@@ -50,6 +50,26 @@
             transition: all 0.3s ease;
         }
 
+		.fixed-add-btn {
+    position: fixed;
+    bottom: 100px; /* Jarak dari bawah */
+    left: 50%;    /* Posisikan mulai dari tengah */
+    transform: translateX(-50%); /* Geser balik sebesar setengah lebar tombol agar benar-benar presisi di tengah */
+    z-index: 1000;
+    
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: #198754; /* Warna hijau bootstrap */
+    color: white;
+}
+
         .label-sm { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .glow-green { color: var(--accent-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
         .glow-blue { color: var(--accent-blue); text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
@@ -321,14 +341,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="glass-card border border-primary border-dashed">
-                    <h6 class="fw-bold"><i class="bi bi-plus-circle"></i> Sinkron Alat Baru</h6>
-                    <div class="input-group">
-                        <input type="text" id="new-device-id" class="form-control form-control-sm" placeholder="Masukkan ID Alat">
-                        <button onclick="claimDevice()" class="btn btn-primary btn-sm">SINKRONKAN</button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -580,9 +592,12 @@ if (!devices) {
             // --- KASUS 2: SUDAH ADA ALAT ---
             // Tampilkan tombol "+" minimalis di atas daftar kartu
             listContainer.innerHTML = `
-                <div class="col-12 mb-3 text-end">
-                    <button type="button" onclick="showSyncModal()" class="btn btn-success">+</button>
-                </div>
+                <button type="button" 
+        onclick="showSyncModal()" 
+        class="fixed-add-btn">
+    +
+</button>
+
             `;
 }
 
@@ -598,8 +613,8 @@ if (!devices) {
 
             // 2. Buat Card Ringkasan
             const cardHtml = `
-                <div class="col-12 mb-3">
-                    <div class="glass-card p-3 border-start border-success border-4" onclick="viewDetail('${id}')" style="cursor:pointer">
+                <div class="col-12 mb-1">
+                    <div class="glass-card p-3 border-start border-success border-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
 							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
@@ -626,9 +641,9 @@ if (!devices) {
                                 <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem"> °C</small>
                             </div>
                         </div>
-
+						<hr class="border-secondary my-2">
                         <div class="text-center mt-2">
-                            <small class="text-secondary" style="font-size: 0.65rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
+                            <small class="text-secondary" onclick="viewDetail('${id}')" style="cursor:pointer; font-size: 0.75rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
                         </div>
                     </div>
        	 		</div>
@@ -925,57 +940,6 @@ function saveFlowCal() {
 		
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
