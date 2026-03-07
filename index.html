@@ -567,6 +567,7 @@ auth.onAuthStateChanged(user => {
 
         // --- DATABASE LOGIC ---
 function loadUserDevices(uid) {
+	db.ref(`users/${uid}/devices`).off();
     db.ref(`users/${uid}/devices`).on('value', snapshot => {
         const devices = snapshot.val();
         const listContainer = document.getElementById('device-list-container');
@@ -764,37 +765,60 @@ function switchDevice(deviceId) {
     connectMQTT(deviceId);
 }
 
-        function connectMQTT(deviceId) {
-            const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
-            client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
+function connectMQTT(deviceId) {
+    const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
+    client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
-            client.onConnectionLost = (resp) => {
-                if(resp.errorCode !== 0) {
-                    document.getElementById('mqtt-status').innerText = "Reconnecting...";
-                    document.getElementById('mqtt-status').className = "fw-bold text-warning small ms-auto";
-                    setTimeout(() => connectMQTT(deviceId), 5000);
-                }
-            };
-
-            client.onMessageArrived = (message) => {
-				console.log("Pesan Masuk: " + message.payloadString);
-                try {
-                    const data = JSON.parse(message.payloadString);
-                    lastSeen = Date.now();
-                    updateDashboard(data);
-                } catch (e) { console.error("JSON Error", e); }
-            };
-
-            client.connect({
-                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
-                onSuccess: () => {
-                    client.subscribe(`melona/${deviceId}/telemetry`);
-                    document.getElementById('mqtt-status').innerText = "Online ●";
-                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
-                },
-                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
-            });
+    client.onConnectionLost = (resp) => {
+        if(resp.errorCode !== 0) {
+            // Update badge status jika koneksi putus
+            const statusBadge = document.getElementById(`status-${deviceId}`);
+            if(statusBadge) statusBadge.innerText = "Offline";
+            setTimeout(() => connectMQTT(deviceId), 5000);
         }
+    };
+
+    client.onMessageArrived = (message) => {
+        const topic = message.destinationName;
+        const payload = message.payloadString;
+        
+        // 1. Tangani Telemetri (JSON)
+        if (topic.endsWith("/telemetry")) {
+            try {
+                const data = JSON.parse(payload);
+                lastSeen = Date.now();
+                updateDashboard(data);
+            } catch (e) { console.error("JSON Error", e); }
+        } 
+        // 2. Tangani Status (String "online"/"offline")
+        else if (topic.endsWith("/status")) {
+            const statusEl = document.getElementById(`status-${deviceId}`);
+            if (statusEl) {
+                if (payload === 'online') {
+                    statusEl.innerText = "Online ●";
+                    statusEl.className = "badge bg-dark text-green small";
+                } else {
+                    statusEl.innerText = "Offline";
+                    statusEl.className = "badge bg-dark text-secondary small";
+                }
+            }
+        }
+    };
+
+    client.connect({
+        useSSL: true, 
+        userName: MQTT_CONFIG.user, 
+        password: MQTT_CONFIG.pass,
+        onSuccess: () => {
+            // SUBSCRIBE KE KEDUANYA
+            client.subscribe(`melona/${deviceId}/telemetry`);
+            client.subscribe(`melona/${deviceId}/status`);
+            
+            document.getElementById('mqtt-status').innerText = "Connected";
+        },
+        onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+    });
+}
 
 function updateDashboard(data) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
@@ -954,6 +978,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
