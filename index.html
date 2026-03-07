@@ -551,7 +551,7 @@ auth.onAuthStateChanged(user => {
             // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
             dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
         }
-        connectMQTT(user.uid);
+        
         // Load data alat milik user
         loadUserDevices(user.uid);
         
@@ -567,7 +567,6 @@ auth.onAuthStateChanged(user => {
 
         // --- DATABASE LOGIC ---
 function loadUserDevices(uid) {
-	db.ref(`users/${uid}/devices`).off();
     db.ref(`users/${uid}/devices`).on('value', snapshot => {
         const devices = snapshot.val();
         const listContainer = document.getElementById('device-list-container');
@@ -598,7 +597,8 @@ if (!devices) {
         class="fixed-add-btn">
     +
 </button>
-`;
+
+            `;
 }
 
         // --- RENDER JIKA ADA ALAT ---
@@ -649,21 +649,6 @@ if (!devices) {
        	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
-// 3. PASANG LISTENER DI SINI (Di dalam loop agar 'id' dikenali)
-            db.ref(`users/${uid}/devices/${id}/status`).on('value', snapshot => {
-                const status = snapshot.val(); 
-                const statusEl = document.getElementById(`status-${id}`);
-                
-                if (statusEl) {
-                    if (status === 'online') {
-                        statusEl.innerText = "Online ●";
-                        statusEl.className = "badge bg-dark text-green small";
-                    } else {
-                        statusEl.innerText = "Offline";
-                        statusEl.className = "badge bg-dark text-secondary small";
-                    }
-                }
-            });
         }
 
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
@@ -765,80 +750,40 @@ function switchDevice(deviceId) {
     connectMQTT(deviceId);
 }
 
-function initAllSubscriptions(uid) {
-    db.ref(`users/${uid}/devices`).once('value', snapshot => {
-        const devices = snapshot.val();
-        if (devices) {
-            for (let id in devices) {
-                client.subscribe(`melona/${id}/telemetry`);
-                client.subscribe(`melona/${id}/status`);
-                console.log("Subscribed ke:", id);
-            }
-        }
-    });
-}
+        function connectMQTT(deviceId) {
+            const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
+            client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
-function connectMQTT(deviceId) {
-    const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
-    client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
-
-    client.onConnectionLost = (resp) => {
-        if(resp.errorCode !== 0) {
-            // Update badge status jika koneksi putus
-            const statusBadge = document.getElementById(`status-${deviceId}`);
-            if(statusBadge) statusBadge.innerText = "Offline";
-            setTimeout(() => connectMQTT(deviceId), 5000);
-        }
-    };
-
-client.onMessageArrived = (message) => {
-    const topic = message.destinationName; // contoh: "melona/MLN-F4E9D4/telemetry"
-    const payload = message.payloadString;
-    const topicParts = topic.split("/");
-    const deviceId = topicParts[1]; // Mengambil "MLN-F4E9D4"
-
-    if (topic.endsWith("/telemetry")) {
-        try {
-            const data = JSON.parse(payload);
-            lastSeen = Date.now();
-            // Panggil fungsi update baru yang menerima deviceId
-            updateDashboardDynamic(deviceId, data);
-        } catch (e) { console.error("JSON Error", e); }
-    }
-        // 2. Tangani Status (String "online"/"offline")
-        else if (topic.endsWith("/status")) {
-            const statusEl = document.getElementById(`status-${deviceId}`);
-            if (statusEl) {
-                if (payload === 'online') {
-                    statusEl.innerText = "Online ●";
-                    statusEl.className = "badge bg-dark text-green small";
-                } else {
-                    statusEl.innerText = "Offline";
-                    statusEl.className = "badge bg-dark text-secondary small";
+            client.onConnectionLost = (resp) => {
+                if(resp.errorCode !== 0) {
+                    document.getElementById('mqtt-status').innerText = "Reconnecting...";
+                    document.getElementById('mqtt-status').className = "fw-bold text-warning small ms-auto";
+                    setTimeout(() => connectMQTT(deviceId), 5000);
                 }
-            }
+            };
+
+            client.onMessageArrived = (message) => {
+				console.log("Pesan Masuk: " + message.payloadString);
+                try {
+                    const data = JSON.parse(message.payloadString);
+                    lastSeen = Date.now();
+                    updateDashboard(data);
+                } catch (e) { console.error("JSON Error", e); }
+            };
+
+            client.connect({
+                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
+                onSuccess: () => {
+                    client.subscribe(`melona/${deviceId}/telemetry`);
+                    document.getElementById('mqtt-status').innerText = "Online ●";
+                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
+                },
+                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+            });
         }
-    };
 
-    client.connect({
-        useSSL: true, 
-        userName: MQTT_CONFIG.user, 
-        password: MQTT_CONFIG.pass,
-        onSuccess: () => {
-            // SUBSCRIBE KE KEDUANYA
-            client.subscribe(`melona/${deviceId}/telemetry`);
-            client.subscribe(`melona/${deviceId}/status`);
-            
-            document.getElementById('mqtt-status').innerText = "Online";
-			initAllSubscriptions(uid);
-        },
-        onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
-    });
-}
-
-function updateDashboard(data, deviceId) {
+function updateDashboard(data) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
-	if (deviceId === currentDeviceId) {
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
     document.getElementById('ppm-val').innerText = data.ppm ?? "--";
@@ -869,11 +814,11 @@ function updateDashboard(data, deviceId) {
         brand.innerHTML = 'Melona <span class="text-green">System</span>';
     }
 // --- LOGIKA UPDATE RINGKASAN DI HOME ---
-	const sHst = document.getElementById(`sum-hst-${deviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
-    const sPh = document.getElementById(`sum-ph-${deviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`);
+    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
+    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
+    const sStatus = document.getElementById(`status-${currentDeviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
@@ -995,11 +940,6 @@ function saveFlowCal() {
 		
 </body>
 </html>
-
-
-
-
-
 
 
 
