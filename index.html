@@ -685,8 +685,8 @@ function deleteDevice(deviceId) {
 // Fungsi Klik Detail
 function viewDetail(id) {
 	currentDeviceId = id;
-	//const selector = document.getElementById('device-selector');
-    //if (selector) selector.value = id;
+	const selector = document.getElementById('device-selector');
+    if (selector) selector.value = id;
     switchDevice(id);
     // Pindah ke halaman dashboard
     const navItems = document.querySelectorAll('.nav-item');
@@ -958,6 +958,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
