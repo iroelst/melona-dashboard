@@ -575,6 +575,7 @@ function loadUserDevices(uid) {
         // Bersihkan kontainer sebelum mengisi
         if (selector) selector.innerHTML = "";
         if (listContainer) listContainer.innerHTML = "";
+		listContainer.appendChild(card);
 
         // --- LOGIKA DASHBOARD KOSONG ---
 if (!devices) {
@@ -949,6 +950,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
