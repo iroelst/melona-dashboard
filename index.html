@@ -745,7 +745,7 @@ function switchDevice(deviceId) {
     if (selector) selector.value = deviceId;
 
     // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
-    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val'];
+    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'mqtt-status'];
     detailIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "--";
@@ -793,8 +793,7 @@ function connectMQTT(deviceId) {
 }
 
 // 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
-function updateDashboard(deviceId, data) {
-	if (deviceId !== currentDeviceId) return;
+function updateDashboard(data) {
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
     document.getElementById('ppm-val').innerText = data.ppm ?? "--";
@@ -949,6 +948,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
