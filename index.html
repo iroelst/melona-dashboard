@@ -685,10 +685,8 @@ function deleteDevice(deviceId) {
 // Fungsi Klik Detail
 function viewDetail(id) {
 	currentDeviceId = id;
-
-	document.getElementById('maintenance-banner').classList.add('hidden');
-	const selector = document.getElementById('device-selector');
-    if (selector) selector.value = id;
+	//const selector = document.getElementById('device-selector');
+    //if (selector) selector.value = id;
     switchDevice(id);
     // Pindah ke halaman dashboard
     const navItems = document.querySelectorAll('.nav-item');
@@ -749,10 +747,17 @@ function switchDevice(deviceId) {
     if (selector) selector.value = deviceId;
 
     // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
-    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val'];
+	const banner = document.getElementById('maintenance-banner');
+	if (banner) banner.classList.add('hidden');
+    const fieldsDash = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'];
     detailIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "--";
+    });
+	    const fieldsCounter = ['d-ab', 'd-phd', 'd-phu', 't-ab', 't-phd', 't-phu'];
+    detailIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "0";
     });
 
     console.log("Monitoring detail alat:", deviceId);
@@ -953,6 +958,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
