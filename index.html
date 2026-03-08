@@ -684,11 +684,15 @@ function deleteDevice(deviceId) {
 		
 // Fungsi Klik Detail
 function viewDetail(id) {
-    document.getElementById('device-selector').value = id;
+	currentDeviceId = id;
+
+	document.getElementById('maintenance-banner').classList.add('hidden');
+	const selector = document.getElementById('device-selector');
+    if (selector) selector.value = id;
     switchDevice(id);
     // Pindah ke halaman dashboard
     const navItems = document.querySelectorAll('.nav-item');
-    switchPage('dashboard', navItems[1]); // Nav ke Dashboard
+    switchPage('dashboard', navItems[1]);
 }
 
         function claimDevice() {
@@ -762,7 +766,7 @@ function connectMQTT(deviceId) {
 		console.log("MQTT Debug - Topik:", message.destinationName);
     	console.log("MQTT Debug - Isi:", message.payloadString);
         try {
-            const topic = message.destinationName; // Contoh: melona/MLN-F4E9D4/telemetry
+            const topic = message.destinationName;
             const deviceId = topic.split('/')[1]; 
             const data = JSON.parse(message.payloadString);
             
@@ -773,7 +777,7 @@ function connectMQTT(deviceId) {
 
             // 2. UPDATE DASHBOARD DETAIL (Hanya jika ID alat sesuai dengan yang dipilih)
             if (deviceId === currentDeviceId) {
-                updateDashboard(data);
+                updateDashboard(deviceId, data);
             }
         } catch (e) { console.error("Gagal memproses data MQTT:", e); }
     };
@@ -793,7 +797,8 @@ function connectMQTT(deviceId) {
 }
 
 // 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
-function updateDashboard(data) {
+function updateDashboard(deviceId, data) {
+	if (deviceId !== currentDeviceId) return;
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
     document.getElementById('ppm-val').innerText = data.ppm ?? "--";
@@ -948,6 +953,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
