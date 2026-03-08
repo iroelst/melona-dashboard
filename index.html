@@ -575,7 +575,6 @@ function loadUserDevices(uid) {
         // Bersihkan kontainer sebelum mengisi
         if (selector) selector.innerHTML = "";
         if (listContainer) listContainer.innerHTML = "";
-		listContainer.appendChild(card);
 
         // --- LOGIKA DASHBOARD KOSONG ---
 if (!devices) {
@@ -598,8 +597,7 @@ if (!devices) {
         class="fixed-add-btn">
     +
 </button>
-
-            `;
+`;
 }
 
         // --- RENDER JIKA ADA ALAT ---
@@ -650,6 +648,7 @@ if (!devices) {
        	 		</div>
             `;
             if (listContainer) listContainer.innerHTML += cardHtml;
+			listContainer.appendChild(cardHtml);
         }
 
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
@@ -765,16 +764,16 @@ function connectMQTT(deviceId) {
     	console.log("MQTT Debug - Isi:", message.payloadString);
         try {
             const topic = message.destinationName; // Contoh: melona/MLN-F4E9D4/telemetry
-            const deviceIdFromTopic = topic.split('/')[1]; 
+            const deviceId = topic.split('/')[1]; 
             const data = JSON.parse(message.payloadString);
             
             lastSeen = Date.now();
 
             // 1. UPDATE RINGKASAN DI HOME (Selalu update untuk semua alat yang aktif)
-            updateHomeSummary(deviceIdFromTopic, data);
+            updateHomeSummary(deviceId, data);
 
             // 2. UPDATE DASHBOARD DETAIL (Hanya jika ID alat sesuai dengan yang dipilih)
-            if (deviceIdFromTopic === currentDeviceId) {
+            if (deviceId === currentDeviceId) {
                 updateDashboard(data);
             }
         } catch (e) { console.error("Gagal memproses data MQTT:", e); }
@@ -950,6 +949,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
