@@ -746,66 +746,67 @@ function switchPage(pageId, el) {
 function switchDevice(deviceId) {
     if (!deviceId) return;
     
-    // Update variabel global
+    // Simpan ID yang dipilih ke variabel global
     currentDeviceId = deviceId;
     
-    // Pastikan UI di header (selector) sinkron
+    // Update tampilan dropdown selector
     const selector = document.getElementById('device-selector');
     if (selector) selector.value = deviceId;
 
-    // Bersihkan tampilan detail sejenak agar user tahu data sedang dimuat ulang
-    document.getElementById('hst-val').innerText = "--";
-    document.getElementById('ppm-val').innerText = "--";
-    document.getElementById('ph-val').innerText = "--";
-    
-    console.log("Monitoring device:", deviceId);
+    console.log("Pindah monitor ke alat:", deviceId);
+    // Data akan otomatis terisi saat pesan MQTT berikutnya masuk
 }
-
 function connectMQTT(deviceId) {
-    // Jika sudah terkoneksi, jangan buat koneksi baru
-    if (client && client.isConnected()) return;
-
-    const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
+    const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
     client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
     client.onMessageArrived = (message) => {
         try {
-            const topic = message.destinationName;
-            const deviceIdFromTopic = topic.split('/')[1];
+            const topic = message.destinationName; // Format: melona/ID_ALAT/telemetry
+            const deviceIdFromTopic = topic.split('/')[1]; 
             const data = JSON.parse(message.payloadString);
             
-            lastSeen = Date.now(); // Update waktu terakhir data diterima
+            lastSeen = Date.now();
 
-            // 1. Update kartu di halaman Home (Global)
-            updateHomeCards(deviceIdFromTopic, data);
+            // 1. Update Ringkasan di Home (Gunakan ID dari Topik)
+            updateHomeSummary(deviceIdFromTopic, data);
 
-            // 2. Update dashboard detail (Jika sedang dibuka)
+            // 2. Update Detail Dashboard (Hanya jika ID cocok dengan yang dipilih)
             if (deviceIdFromTopic === currentDeviceId) {
                 updateDashboard(data);
             }
-        } catch (e) {
-            console.error("Gagal parse data MQTT:", e);
-        }
+        } catch (e) { console.error("JSON Error", e); }
     };
 
     client.connect({
-        useSSL: true, 
-        userName: MQTT_CONFIG.user, 
-        password: MQTT_CONFIG.pass,
+        useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
         onSuccess: () => {
-            console.log("MQTT Connected!");
-            client.subscribe("melona/+/telemetry"); // Wildcard untuk semua alat
-            const statusEl = document.getElementById('mqtt-status');
-            statusEl.innerText = "Online ●";
-            statusEl.className = "fw-bold text-green small ms-auto";
+            // BERUBAH: Gunakan '+' agar menerima data dari SEMUA alat
+            client.subscribe(`melona/+/telemetry`); 
+            document.getElementById('mqtt-status').innerText = "Online ●";
+            document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
         },
-        onFailure: (e) => {
-            console.log("Koneksi Gagal:", e);
-            setTimeout(() => connectMQTT(deviceId), 5000);
-        }
+        onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
     });
 }
 
+		function updateHomeSummary(deviceId, data) {
+    const sHst = document.getElementById(`sum-hst-${deviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
+    const sPh = document.getElementById(`sum-ph-${deviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
+    const sStatus = document.getElementById(`status-${deviceId}`);
+
+    if(sHst) sHst.innerText = data.hst ?? "--";
+    if(sPpm) sPpm.innerText = data.ppm ?? "--";
+    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    if(sTemp) sTemp.innerText = data.t_air ?? "--";
+    
+    if(sStatus) {
+        sStatus.innerText = "Online ●";
+        sStatus.className = "badge bg-dark text-green small";
+    }
+}
 function updateDashboard(data) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
     document.getElementById('hst-val').innerText = data.hst ?? "--";
@@ -983,6 +984,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
