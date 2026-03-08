@@ -808,7 +808,7 @@ function connectMQTT(deviceId) {
     }
 }
 function updateDashboard(data) {
-    // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
+// Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
     document.getElementById('ppm-val').innerText = data.ppm ?? "--";
@@ -833,11 +833,12 @@ function updateDashboard(data) {
     const brand = document.getElementById('brand-text');
     if (data.sys === "OFF") {
         banner.classList.remove('hidden');
-        brand.innerHTML = 'Melona <span class="text-red">Maintenance</span>';
+        brand.innerHTML = 'Melona <span class="text-danger">Maintenance</span>';
     } else {
         banner.classList.add('hidden');
-        brand.innerHTML = 'Melona <span class="text-green">System</span>';
+        brand.innerHTML = 'Melona <span class="text-success">System</span>';
     }
+}
 // --- LOGIKA UPDATE RINGKASAN DI HOME ---
     const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
@@ -946,16 +947,16 @@ function saveFlowCal() {
 
 		function updateHomeCards(deviceId, data) {
     // Update data di kartu ringkasan (Home)
+function updateHomeCards(deviceId, data) {
     const sHst = document.getElementById(`sum-hst-${deviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
     const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`);
 
-    if (sHst) sHst.innerText = data.hst ?? "--";
-    if (sPpm) sPpm.innerText = data.ppm ?? "--";
-    if (sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if (sTemp) sTemp.innerText = data.t_air ?? "--";
+    if(sHst) sHst.innerText = data.hst ?? "--";
+    if(sPpm) sPpm.innerText = data.ppm ?? "--";
+    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    if(sTemp) sTemp.innerText = data.t_air ?? "--"; // Gunakan t_air sesuai kode ESP
     
     if (sStatus) {
         sStatus.innerText = "Online ●";
@@ -984,6 +985,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
