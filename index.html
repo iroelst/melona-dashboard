@@ -790,7 +790,40 @@ function connectMQTT(deviceId) {
         onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
     });
 }
-		function updateHomeSummary(deviceId, data) {
+
+// 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
+function updateDashboard(data) {
+    document.getElementById('hst-val').innerText = data.hst ?? "--";
+    document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
+    document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+    document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    
+    document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+    document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
+    
+    document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+    document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+    
+    document.getElementById('d-ab').innerText = data.d_ab ?? "0";
+    document.getElementById('d-phd').innerText = data.d_phd ?? "0";
+    document.getElementById('d-phu').innerText = data.d_phu ?? "0";
+    document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+    document.getElementById('t-phd').innerText = data.t_phd ?? "0";
+    document.getElementById('t-phu').innerText = data.t_phu ?? "0";
+
+    const banner = document.getElementById('maintenance-banner');
+    const brand = document.getElementById('brand-text');
+    if (data.sys === "OFF") {
+        banner.classList.remove('hidden');
+        brand.innerHTML = 'Melona <span class="text-danger">Maintenance</span>';
+    } else {
+        banner.classList.add('hidden');
+        brand.innerHTML = 'Melona <span class="text-success">System</span>';
+    }
+}
+
+// 2. Fungsi untuk memperbarui tampilan kartu di halaman Home (Ringkasan)
+function updateHomeSummary(deviceId, data) {
     const sHst = document.getElementById(`sum-hst-${deviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
@@ -804,59 +837,9 @@ function connectMQTT(deviceId) {
     
     if(sStatus) {
         sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-green small";
+        sStatus.className = "badge bg-dark text-success small"; // pastikan class CSS 'text-success' ada
     }
 }
-function updateDashboard(data) {
-// Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
-    document.getElementById('hst-val').innerText = data.hst ?? "--";
-    document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
-    document.getElementById('ppm-val').innerText = data.ppm ?? "--";
-    document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    
-    document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
-    document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
-    
-    document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
-    document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
-    
-    // Data Dosing Harian (d_) dan Total (t_)
-    document.getElementById('d-ab').innerText = data.d_ab ?? "0";
-    document.getElementById('d-phd').innerText = data.d_phd ?? "0";
-    document.getElementById('d-phu').innerText = data.d_phu ?? "0";
-    document.getElementById('t-ab').innerText = data.t_ab ?? "0";
-    document.getElementById('t-phd').innerText = data.t_phd ?? "0";
-    document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-
-    // Status Sistem (Maintenance Mode)
-    const banner = document.getElementById('maintenance-banner');
-    const brand = document.getElementById('brand-text');
-    if (data.sys === "OFF") {
-        banner.classList.remove('hidden');
-        brand.innerHTML = 'Melona <span class="text-danger">Maintenance</span>';
-    } else {
-        banner.classList.add('hidden');
-        brand.innerHTML = 'Melona <span class="text-success">System</span>';
-    }
-}
-// --- LOGIKA UPDATE RINGKASAN DI HOME ---
-    const sHst = document.getElementById(`sum-hst-${currentDeviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${currentDeviceId}`);
-    const sPh = document.getElementById(`sum-ph-${currentDeviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${currentDeviceId}`);
-    const sStatus = document.getElementById(`status-${currentDeviceId}`);
-
-    if(sHst) sHst.innerText = data.hst ?? "--";
-    if(sPpm) sPpm.innerText = data.ppm ?? "--";
-    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sTemp) sTemp.innerText = data.t_air ?? "--";
-    
-    if(sStatus) {
-        sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-green small";
-    }
-}
-
         // MQTT Command Send
         function sendCommand(payload) {
             if (client && client.isConnected()) {
@@ -985,6 +968,7 @@ function updateHomeCards(deviceId, data) {
 		
 </body>
 </html>
+
 
 
 
