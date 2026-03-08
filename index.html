@@ -746,42 +746,51 @@ function switchPage(pageId, el) {
 function switchDevice(deviceId) {
     if (!deviceId) return;
     
-    // Simpan ID yang dipilih ke variabel global
+    // Simpan ID yang dipilih ke variabel global tanpa memutus koneksi
     currentDeviceId = deviceId;
     
-    // Update tampilan dropdown selector
+    // Update tampilan dropdown selector di header
     const selector = document.getElementById('device-selector');
     if (selector) selector.value = deviceId;
 
-    console.log("Pindah monitor ke alat:", deviceId);
-    // Data akan otomatis terisi saat pesan MQTT berikutnya masuk
+    // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
+    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val'];
+    detailIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "--";
+    });
+
+    console.log("Monitoring detail alat:", deviceId);
 }
+		
 function connectMQTT(deviceId) {
-    const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
+    const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
     client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
     client.onMessageArrived = (message) => {
         try {
-            const topic = message.destinationName; // Format: melona/ID_ALAT/telemetry
+            const topic = message.destinationName; // Contoh: melona/MLN-F4E9D4/telemetry
             const deviceIdFromTopic = topic.split('/')[1]; 
             const data = JSON.parse(message.payloadString);
             
             lastSeen = Date.now();
 
-            // 1. Update Ringkasan di Home (Gunakan ID dari Topik)
+            // 1. UPDATE RINGKASAN DI HOME (Selalu update untuk semua alat yang aktif)
             updateHomeSummary(deviceIdFromTopic, data);
 
-            // 2. Update Detail Dashboard (Hanya jika ID cocok dengan yang dipilih)
+            // 2. UPDATE DASHBOARD DETAIL (Hanya jika ID alat sesuai dengan yang dipilih)
             if (deviceIdFromTopic === currentDeviceId) {
                 updateDashboard(data);
             }
-        } catch (e) { console.error("JSON Error", e); }
+        } catch (e) { console.error("Gagal memproses data MQTT:", e); }
     };
 
     client.connect({
-        useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
+        useSSL: true, 
+        userName: MQTT_CONFIG.user, 
+        password: MQTT_CONFIG.pass,
         onSuccess: () => {
-            // BERUBAH: Gunakan '+' agar menerima data dari SEMUA alat
+            // BERUBAH: Gunakan '+' untuk memantau semua alat sekaligus
             client.subscribe(`melona/+/telemetry`); 
             document.getElementById('mqtt-status').innerText = "Online ●";
             document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
@@ -789,7 +798,6 @@ function connectMQTT(deviceId) {
         onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
     });
 }
-
 		function updateHomeSummary(deviceId, data) {
     const sHst = document.getElementById(`sum-hst-${deviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
@@ -984,6 +992,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
