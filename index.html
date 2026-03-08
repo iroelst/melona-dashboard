@@ -760,6 +760,8 @@ function connectMQTT(deviceId) {
     client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
     client.onMessageArrived = (message) => {
+		console.log("MQTT Debug - Topik:", message.destinationName);
+    	console.log("MQTT Debug - Isi:", message.payloadString);
         try {
             const topic = message.destinationName; // Contoh: melona/MLN-F4E9D4/telemetry
             const deviceIdFromTopic = topic.split('/')[1]; 
@@ -949,6 +951,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
