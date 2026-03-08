@@ -748,12 +748,12 @@ function switchDevice(deviceId) {
 	const banner = document.getElementById('maintenance-banner');
 	if (banner) banner.classList.add('hidden');
     const fieldsDash = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'];
-    detailIds.forEach(id => {
+    fieldsDash.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "--";
     });
 	    const fieldsCounter = ['d-ab', 'd-phd', 'd-phu', 't-ab', 't-phd', 't-phu'];
-    detailIds.forEach(id => {
+    fieldsCounter.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "0";
     });
@@ -956,6 +956,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
