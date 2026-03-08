@@ -762,23 +762,28 @@ function switchDevice(deviceId) {
                 }
             };
 
-            client.onMessageArrived = (message) => {
-				console.log("Pesan Masuk: " + message.payloadString);
-                try {
-                    const data = JSON.parse(message.payloadString);
-                    lastSeen = Date.now();
-                    updateDashboard(data);
-                } catch (e) { console.error("JSON Error", e); }
-            };
+client.onMessageArrived = (message) => {
+    const topic = message.destinationName; // Contoh: "melona/MLN-123456/telemetry"
+    const deviceIdFromTopic = topic.split('/')[1]; 
+    const data = JSON.parse(message.payloadString);
+
+    // Update kartu di halaman Home (selalu update untuk semua alat)
+    updateHomeCards(deviceIdFromTopic, data);
+
+    // Update dashboard detail HANYA jika ID sesuai dengan yang sedang dibuka
+    if (deviceIdFromTopic === currentDeviceId) {
+        updateDashboard(data);
+    }
+};
 
             client.connect({
                 useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
                 onSuccess: () => {
-                    client.subscribe(`melona/${deviceId}/telemetry`);
+                    client.subscribe(`melona/+/telemetry`);
                     document.getElementById('mqtt-status').innerText = "Online ●";
                     document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
                 },
-                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 2000)
             });
         }
 
@@ -940,6 +945,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
