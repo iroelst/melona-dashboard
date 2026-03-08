@@ -793,7 +793,8 @@ function connectMQTT(deviceId) {
 }
 
 // 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
-function updateDashboard(data) {
+function updateDashboard(deviceId, data) {
+	if (deviceId !== currentDeviceId) return;
     document.getElementById('hst-val').innerText = data.hst ?? "--";
     document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
     document.getElementById('ppm-val').innerText = data.ppm ?? "--";
@@ -831,7 +832,7 @@ function updateHomeSummary(deviceId, data) {
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
     if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sTemp) sTemp.innerText = data.t_air ?? "--"; // Gunakan t_air sesuai kode ESP
+    if(sTemp) sTemp.innerText = data.t_air ?? "--";
     
     if (sStatus) {
         sStatus.innerText = "Online ●";
@@ -948,6 +949,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
