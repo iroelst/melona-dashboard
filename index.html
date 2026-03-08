@@ -741,8 +741,8 @@ function switchDevice(deviceId) {
     currentDeviceId = deviceId;
     
     // Update tampilan dropdown selector di header
-    //const selector = document.getElementById('device-selector');
-    //if (selector) selector.value = deviceId;
+    const selector = document.getElementById('device-selector');
+    if (selector) selector.value = deviceId;
 
     // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
 	const banner = document.getElementById('maintenance-banner');
@@ -956,6 +956,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
