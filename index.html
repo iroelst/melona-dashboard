@@ -927,25 +927,6 @@ function saveFlowCal() {
                 statusEl.className = "fw-bold text-red small ms-auto";
             }
         }, 5000);
-
-		function updateHomeCards(deviceId, data) {
-    // Update data di kartu ringkasan (Home)
-function updateHomeCards(deviceId, data) {
-    const sHst = document.getElementById(`sum-hst-${deviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
-    const sPh = document.getElementById(`sum-ph-${deviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-
-    if(sHst) sHst.innerText = data.hst ?? "--";
-    if(sPpm) sPpm.innerText = data.ppm ?? "--";
-    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sTemp) sTemp.innerText = data.t_air ?? "--"; // Gunakan t_air sesuai kode ESP
-    
-    if (sStatus) {
-        sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-green small";
-    }
-}
     </script>
 
 <div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
@@ -968,6 +949,7 @@ function updateHomeCards(deviceId, data) {
 		
 </body>
 </html>
+
 
 
 
