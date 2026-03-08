@@ -660,10 +660,11 @@ if (!devices) {
         }
 
         // Auto-switch ke perangkat pertama jika belum ada yang terpilih
-        const deviceIds = Object.keys(devices);
-        if (!currentDeviceId && deviceIds.length > 0) {
-            switchDevice(deviceIds[0]);
-        }
+const deviceIds = Object.keys(devices);
+if (deviceIds.length > 0) {
+    if (!currentDeviceId) currentDeviceId = deviceIds[0];
+    connectMQTT(currentDeviceId); // Pemicu koneksi pertama kali
+}
     });
 }
 
@@ -745,55 +746,65 @@ function switchPage(pageId, el) {
 function switchDevice(deviceId) {
     if (!deviceId) return;
     
-    // 1. Bersihkan koneksi lama agar tidak tumpang tindih
-    if (client && client.isConnected()) {
-        client.unsubscribe(`melona/${currentDeviceId}/telemetry`);
-        client.disconnect();
-    }
-    
-    // 2. Update variabel global ke perangkat baru
+    // Update variabel global
     currentDeviceId = deviceId;
     
-    // 3. Hubungkan kembali ke topik yang benar
-    connectMQTT(deviceId);
+    // Pastikan UI di header (selector) sinkron
+    const selector = document.getElementById('device-selector');
+    if (selector) selector.value = deviceId;
+
+    // Bersihkan tampilan detail sejenak agar user tahu data sedang dimuat ulang
+    document.getElementById('hst-val').innerText = "--";
+    document.getElementById('ppm-val').innerText = "--";
+    document.getElementById('ph-val').innerText = "--";
+    
+    console.log("Monitoring device:", deviceId);
 }
 
-        function connectMQTT(deviceId) {
-            const clientId = "Melona_" + Math.random().toString(16).substr(2, 5);
-            client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
+function connectMQTT(deviceId) {
+    // Jika sudah terkoneksi, jangan buat koneksi baru
+    if (client && client.isConnected()) return;
 
-            client.onConnectionLost = (resp) => {
-                if(resp.errorCode !== 0) {
-                    document.getElementById('mqtt-status').innerText = "Reconnecting...";
-                    document.getElementById('mqtt-status').className = "fw-bold text-warning small ms-auto";
-                    setTimeout(() => connectMQTT(deviceId), 5000);
-                }
-            };
+    const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
+    client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
-client.onMessageArrived = (message) => {
-    const topic = message.destinationName; // Contoh: "melona/MLN-123456/telemetry"
-    const deviceIdFromTopic = topic.split('/')[1]; 
-    const data = JSON.parse(message.payloadString);
+    client.onMessageArrived = (message) => {
+        try {
+            const topic = message.destinationName;
+            const deviceIdFromTopic = topic.split('/')[1];
+            const data = JSON.parse(message.payloadString);
+            
+            lastSeen = Date.now(); // Update waktu terakhir data diterima
 
-    // Update kartu di halaman Home (selalu update untuk semua alat)
-    updateHomeCards(deviceIdFromTopic, data);
+            // 1. Update kartu di halaman Home (Global)
+            updateHomeCards(deviceIdFromTopic, data);
 
-    // Update dashboard detail HANYA jika ID sesuai dengan yang sedang dibuka
-    if (deviceIdFromTopic === currentDeviceId) {
-        updateDashboard(data);
-    }
-};
-
-            client.connect({
-                useSSL: true, userName: MQTT_CONFIG.user, password: MQTT_CONFIG.pass,
-                onSuccess: () => {
-                    client.subscribe(`melona/+/telemetry`);
-                    document.getElementById('mqtt-status').innerText = "Online ●";
-                    document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
-                },
-                onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 2000)
-            });
+            // 2. Update dashboard detail (Jika sedang dibuka)
+            if (deviceIdFromTopic === currentDeviceId) {
+                updateDashboard(data);
+            }
+        } catch (e) {
+            console.error("Gagal parse data MQTT:", e);
         }
+    };
+
+    client.connect({
+        useSSL: true, 
+        userName: MQTT_CONFIG.user, 
+        password: MQTT_CONFIG.pass,
+        onSuccess: () => {
+            console.log("MQTT Connected!");
+            client.subscribe("melona/+/telemetry"); // Wildcard untuk semua alat
+            const statusEl = document.getElementById('mqtt-status');
+            statusEl.innerText = "Online ●";
+            statusEl.className = "fw-bold text-green small ms-auto";
+        },
+        onFailure: (e) => {
+            console.log("Koneksi Gagal:", e);
+            setTimeout(() => connectMQTT(deviceId), 5000);
+        }
+    });
+}
 
 function updateDashboard(data) {
     // Sinkronisasi dengan variabel dari ESP32 (doc["hst"], doc["ppm"], dll)
@@ -931,6 +942,25 @@ function saveFlowCal() {
                 statusEl.className = "fw-bold text-red small ms-auto";
             }
         }, 5000);
+
+		function updateHomeCards(deviceId, data) {
+    // Update data di kartu ringkasan (Home)
+    const sHst = document.getElementById(`sum-hst-${deviceId}`);
+    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
+    const sPh = document.getElementById(`sum-ph-${deviceId}`);
+    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
+    const sStatus = document.getElementById(`status-${deviceId}`);
+
+    if (sHst) sHst.innerText = data.hst ?? "--";
+    if (sPpm) sPpm.innerText = data.ppm ?? "--";
+    if (sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+    if (sTemp) sTemp.innerText = data.t_air ?? "--";
+    
+    if (sStatus) {
+        sStatus.innerText = "Online ●";
+        sStatus.className = "badge bg-dark text-green small";
+    }
+}
     </script>
 
 <div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
@@ -953,6 +983,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
