@@ -828,6 +828,7 @@ function updateHomeSummary(deviceId, data) {
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
     const sTemp = document.getElementById(`sum-temp-${deviceId}`);
+	const sStatus = document.getElementById(`status-${deviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
@@ -948,6 +949,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
