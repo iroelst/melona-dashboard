@@ -617,6 +617,7 @@ if (!devices) {
                     <div class="glass-card p-3 border-start border-success border-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
+							<div id="icon-container-${id}" class="d-flex align-items-center">
 							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
                 			<i class="bi bi-trash"></i>
             				</button>
@@ -813,14 +814,11 @@ function updateDashboard(data) {
     document.getElementById('t-phd').innerText = data.t_phd ?? "0";
     document.getElementById('t-phu').innerText = data.t_phu ?? "0";
 
-    const banner = document.getElementById('maintenance-banner');
-    const brand = document.getElementById('brand-text');
+	const banner = document.getElementById('maintenance-banner');
     if (data.sys === "OFF") {
-        banner.classList.remove('hidden');
-        brand.innerHTML = 'Melona <span class="text-danger">Maintenance</span>';
+        banner.style.display = "block"; // Muncul di halaman detail alat yang maintenance
     } else {
-        banner.classList.add('hidden');
-        brand.innerHTML = 'Melona <span class="text-success">System</span>';
+        banner.style.display = "none";
     }
 }
 
@@ -840,6 +838,22 @@ function updateHomeSummary(deviceId, data) {
     if (sStatus) {
         sStatus.innerText = "Online ●";
         sStatus.className = "badge bg-dark text-green small";
+    }
+}
+
+		// 2. LOGIKA IKON (Maintenance vs Trash)
+    const iconContainer = document.getElementById(`icon-container-${deviceId}`);
+    if (iconContainer) {
+        // Cek jika status sistem adalah "OFF" (Maintenance)
+        const isMaintenance = (data.sys === "OFF");
+        
+        iconContainer.innerHTML = `
+            <button class="btn btn-sm btn-link ${isMaintenance ? 'text-warning' : 'text-danger'} p-0 mx-2" 
+                    onclick="${isMaintenance ? '' : 'deleteDevice(\''+deviceId+'\')'}" 
+                    title="${isMaintenance ? 'Sistem Maintenance' : 'Hapus Alat'}">
+                <i class="bi ${isMaintenance ? 'bi-wrench-adjustable' : 'bi-trash'}"></i>
+            </button>
+        `;
     }
 }
         // MQTT Command Send
@@ -951,6 +965,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
