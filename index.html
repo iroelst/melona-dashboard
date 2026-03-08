@@ -828,16 +828,15 @@ function updateHomeSummary(deviceId, data) {
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
     const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`);
 
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
     if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sTemp) sTemp.innerText = data.t_air ?? "--";
+    if(sTemp) sTemp.innerText = data.t_air ?? "--"; // Gunakan t_air sesuai kode ESP
     
-    if(sStatus) {
+    if (sStatus) {
         sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-success small"; // pastikan class CSS 'text-success' ada
+        sStatus.className = "badge bg-dark text-green small";
     }
 }
         // MQTT Command Send
@@ -949,6 +948,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
