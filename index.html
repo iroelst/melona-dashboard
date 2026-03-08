@@ -381,14 +381,6 @@
         let currentDeviceId = "";
         let lastSeen = Date.now();
 
-				if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('Melona PWA: Service Worker terdaftar!'))
-      .catch(err => console.log('Melona PWA: Registrasi gagal', err));
-  });
-}
-
         // --- AUTH LOGIC ---
         function handleLogin() {
             const email = document.getElementById('login-email').value;
@@ -992,6 +984,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
