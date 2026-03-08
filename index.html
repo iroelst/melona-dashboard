@@ -745,7 +745,7 @@ function switchDevice(deviceId) {
     if (selector) selector.value = deviceId;
 
     // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
-    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'mqtt-status'];
+    const detailIds = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val'];
     detailIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "--";
@@ -948,6 +948,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
