@@ -616,7 +616,8 @@ if (!devices) {
                     <div class="glass-card p-3 border-start border-success border-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
-							                <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
+							                
+											<div id="maintenance-banner" class="alert bg-red-soft hidden text-center">
                     <i class="bi bi-tools"></i>
                 </div>
 							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
@@ -957,6 +958,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
