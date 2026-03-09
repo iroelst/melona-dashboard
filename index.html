@@ -845,28 +845,28 @@ function updateDashboard(deviceId, data) {
 
 // 2. Fungsi untuk memperbarui tampilan kartu di halaman Home (Ringkasan)
 function updateHomeSummary(deviceId, data) {
-	// Cek status saat ini di UI (apakah sedang Online atau Offline?)
-    const sStatus = document.getElementById(`status-${deviceId}`);
-    
-    // Jika status elemen di UI sudah bertuliskan "Offline", 
-    // maka jangan update data sensornya (biarkan tetap "--")
-    if (sStatus && sStatus.innerText.includes("Offline")) {
-        return; 
-    }
+    // Deklarasi variabel cukup dilakukan sekali di sini
     const sHst = document.getElementById(`sum-hst-${deviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
     const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-	const sStatus = document.getElementById(`status-${deviceId}`);
+    const sStatus = document.getElementById(`status-${deviceId}`); // <--- Pastikan hanya ada satu deklarasi ini
 
+    // Logika penghentian jika alat offline
+    if (sStatus && sStatus.innerText.includes("Offline")) {
+        return; 
+    }
+
+    // Update elemen hanya jika elemen tersebut ditemukan
     if(sHst) sHst.innerText = data.hst ?? "--";
     if(sPpm) sPpm.innerText = data.ppm ?? "--";
     if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
     if(sTemp) sTemp.innerText = data.t_air ?? "--";
     
+    // Update badge status ke hijau jika data masuk
     if (sStatus) {
         sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-green small";
+        sStatus.className = "badge bg-dark text-success small"; 
     }
 }
 
@@ -979,6 +979,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
