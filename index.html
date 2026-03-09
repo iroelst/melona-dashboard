@@ -773,54 +773,47 @@ function connectMQTT(deviceId) {
     const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
     client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
-    client.onMessageArrived = (message) => {
-		console.log("MQTT Debug - Topik:", message.destinationName);
-    	console.log("MQTT Debug - Isi:", message.payloadString);
+client.onMessageArrived = (message) => {
+    console.log("MQTT Debug - Topik:", message.destinationName);
+    console.log("MQTT Debug - Isi:", message.payloadString);
 
-	const topic = message.destinationName;
-    const topicParts = topic.split('/');
-    const deviceId = topicParts[1];
-    const type = topicParts[2]; // 'telemetry' atau 'status'
+    try {
+        const topic = message.destinationName;
+        const topicParts = topic.split('/');
+        const deviceId = topicParts[1];
+        const type = topicParts[2]; 
 
-    // A. MENANGANI STATUS (ONLINE/OFFLINE)
-    if (type === 'status') {
-        const status = message.payloadString; // "online" atau "offline"
-        console.log(`Status ${deviceId}: ${status}`);
-        
-        // Panggil fungsi untuk update UI status (contoh: badge berubah warna)
-        updateStatusUI(deviceId, status === 'online');
-    }
-else if (type === 'telemetry') {
-        try {
+        if (type === 'status') {
+            const status = message.payloadString;
+            updateStatusUI(deviceId, status === 'online');
+        } else if (type === 'telemetry') {
             const data = JSON.parse(message.payloadString);
-            
             lastSeen = Date.now();
-
-            // 1. UPDATE RINGKASAN DI HOME (Selalu update untuk semua alat yang aktif)
             updateHomeSummary(deviceId, data);
-
-            // 2. UPDATE DASHBOARD DETAIL (Hanya jika ID alat sesuai dengan yang dipilih)
             if (deviceId === currentDeviceId) {
                 updateDashboard(deviceId, data);
             }
-        } catch (e) { console.error("Gagal memproses data MQTT:", e); }
-    };
+            updateStatusUI(deviceId, true);
+        }
+    } catch (e) { 
+        console.error("Gagal memproses data MQTT:", e); 
+    }
+}; // <--- KURUNG INI MENUTUP FUNGSI onMessageArrived
 
-    client.connect({
-        useSSL: true, 
-        userName: MQTT_CONFIG.user, 
-        password: MQTT_CONFIG.pass,
-        onSuccess: () => {
-            // BERUBAH: Gunakan '+' untuk memantau semua alat sekaligus
-            client.subscribe(`melona/+/telemetry`);
-			client.subscribe(`melona/+/status`);
-            document.getElementById('mqtt-status').innerText = "Online ●";
-            document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
-        },
-        onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
-    });
+// --- BARU SETELAH ITU FUNGSI CLIENT.CONNECT DIMULAI ---
+client.connect({
+    useSSL: true, 
+    userName: MQTT_CONFIG.user, 
+    password: MQTT_CONFIG.pass,
+    onSuccess: () => {
+        client.subscribe(`melona/+/telemetry`);
+        client.subscribe(`melona/+/status`);
+        document.getElementById('mqtt-status').innerText = "Online ●";
+        document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
+    },
+    onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+});
 }
-
 // 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
 function updateDashboard(deviceId, data) {
 	if (deviceId !== currentDeviceId) return;
@@ -978,6 +971,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
