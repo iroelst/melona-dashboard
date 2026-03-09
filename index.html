@@ -845,6 +845,14 @@ function updateDashboard(deviceId, data) {
 
 // 2. Fungsi untuk memperbarui tampilan kartu di halaman Home (Ringkasan)
 function updateHomeSummary(deviceId, data) {
+	// Cek status saat ini di UI (apakah sedang Online atau Offline?)
+    const sStatus = document.getElementById(`status-${deviceId}`);
+    
+    // Jika status elemen di UI sudah bertuliskan "Offline", 
+    // maka jangan update data sensornya (biarkan tetap "--")
+    if (sStatus && sStatus.innerText.includes("Offline")) {
+        return; 
+    }
     const sHst = document.getElementById(`sum-hst-${deviceId}`);
     const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
     const sPh = document.getElementById(`sum-ph-${deviceId}`);
@@ -971,6 +979,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
