@@ -873,6 +873,7 @@
                 client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
 
                 client.onMessageArrived = (message) => {
+                    lastSeen = Date.now();
                     console.log("MQTT Debug - Topik:", message.destinationName);
                     console.log("MQTT Debug - Isi:", message.payloadString);
 
@@ -1090,5 +1091,6 @@
                 </div>
             </div>
 </body>
+
 
 </html>
