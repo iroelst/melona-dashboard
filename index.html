@@ -774,7 +774,7 @@ function switchDevice(deviceId) {
     const statusElement = document.getElementById(`status-${deviceId}`);
     if (statusElement) {
         statusElement.innerText = isOnline ? "Online ●" : "Offline ●";
-        statusElement.style.color = isOnline ? "yellow" : "gray";
+        statusElement.style.color = isOnline ? "text-success" : "gray";
     }
 }
 		
@@ -794,7 +794,7 @@ client.onMessageArrived = (message) => {
 
 if (type === 'status') {
     const status = message.payloadString;
-    updateStatusUI(deviceId, status === 'online'); // Sekarang menangani 'offline' secara otomatis
+    updateStatusUI(deviceId, status === 'online');
 } else if (type === 'telemetry') {
             const data = JSON.parse(message.payloadString);
             lastSeen = Date.now();
@@ -807,7 +807,7 @@ if (type === 'status') {
     } catch (e) { 
         console.error("Gagal memproses data MQTT:", e); 
     }
-}; // <--- KURUNG INI MENUTUP FUNGSI onMessageArrived
+};
 
 // --- BARU SETELAH ITU FUNGSI CLIENT.CONNECT DIMULAI ---
 client.connect({
@@ -876,7 +876,7 @@ function updateHomeSummary(deviceId, data) {
 if (sStatus) {
     sStatus.innerText = "Online ●";
     // Menggunakan style langsung agar warna sama dengan tema aplikasi
-    //sStatus.style.color = "#39ff14"; 
+    sStatus.style.color = "#39ff14"; 
     sStatus.className = "badge bg-dark small"; 
 }
 }
@@ -990,6 +990,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
