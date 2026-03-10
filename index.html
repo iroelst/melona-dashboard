@@ -783,10 +783,10 @@ client.onMessageArrived = (message) => {
         const deviceId = topicParts[1];
         const type = topicParts[2]; 
 
-        if (type === 'status') {
-            const status = message.payloadString;
-            updateStatusUI(deviceId, status === 'online');
-        } else if (type === 'telemetry') {
+if (type === 'status') {
+    const status = message.payloadString;
+    updateStatusUI(deviceId, status === 'online'); // Sekarang menangani 'offline' secara otomatis
+} else if (type === 'telemetry') {
             const data = JSON.parse(message.payloadString);
             lastSeen = Date.now();
             updateHomeSummary(deviceId, data);
@@ -979,6 +979,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
