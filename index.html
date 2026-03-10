@@ -454,7 +454,7 @@
         </div>
         <div class="col-4">
             <label class="label-sm">HST</label>
-            <input type="number" id="edit-9hst" class="form-control" placeholder="1">
+            <input type="number" id="edit-hst" class="form-control" placeholder="1">
         </div>
     </div>
     <button onclick="sendTargetUpdate()" class="btn btn-warning w-100 mt-3 fw-bold text-dark">SIMPAN TARGET BARU</button>
@@ -1062,6 +1062,32 @@
                 Swal.fire('Berhasil', 'Kalibrasi debit dikirim ke alat!', 'success');
             }
 
+            function sendTargetUpdate() {
+    // 1. Ambil nilai dari input berdasarkan ID
+    const ppm = document.getElementById('edit-ppm').value;
+    const ph = document.getElementById('edit-ph').value;
+    const hst = document.getElementById('edit-hst').value;
+
+    // 2. Buat payload JSON
+    const payload = JSON.stringify({
+        cmd: "update_target",
+        target_ppm: parseInt(ppm),
+        target_ph: parseFloat(ph),
+        target_hst: parseInt(hst)
+    });
+
+    // 3. Kirim via MQTT
+    // Pastikan 'client' adalah objek Paho.MQTT Anda dan 'currentDeviceId' sudah terisi
+    const topic = `melona/${currentDeviceId}/cmd`;
+    const message = new Paho.MQTT.Message(payload);
+    message.destinationName = topic;
+    client.send(message);
+
+    console.log("Mengirim ke MQTT:", payload);
+    alert("Perintah kirim target berhasil!");
+}
+
+
             function sendCalibration(key, inputId) {
                 const val = document.getElementById(inputId).value;
                 if (val) {
@@ -1114,6 +1140,7 @@
 
 
 </html>
+
 
 
 
