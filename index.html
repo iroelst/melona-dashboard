@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,16 +13,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/png" href="melona_dosing.png">
 
-	<link rel="apple-touch-icon" href="melona_dosing.png">
-	
+    <link rel="apple-touch-icon" href="melona_dosing.png">
+
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-	
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
             --bg-dark: #0a0c0e;
@@ -50,153 +52,239 @@
             transition: all 0.3s ease;
         }
 
-		.fixed-add-btn {
-    position: fixed;
-    bottom: 100px; /* Jarak dari bawah */
-    left: 50%;    /* Posisikan mulai dari tengah */
-    transform: translateX(-50%); /* Geser balik sebesar setengah lebar tombol agar benar-benar presisi di tengah */
-    z-index: 1000;
-    
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 24px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background-color: #198754; /* Warna hijau bootstrap */
-    color: white;
-}
+        .fixed-add-btn {
+            position: fixed;
+            bottom: 100px;
+            /* Jarak dari bawah */
+            left: 50%;
+            /* Posisi mulai dari tengah */
+            transform: translateX(-50%);
+            z-index: 1000;
 
-        .label-sm { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .glow-green { color: var(--accent-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
-        .glow-blue { color: var(--accent-blue); text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
-        .text-green { color: var(--accent-green) !important; }
-        .text-red { color: var(--accent-red) !important; }
-		.text-blue { color: var(--accent-blue) !important; }
-
-        .bottom-nav {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 450px; background: rgba(15, 18, 20, 0.9);
-            backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 35px; display: flex; justify-content: space-around;
-            padding: 12px; z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background-color: #198754;
+            /* Warna hijau bootstrap */
+            color: white;
         }
 
-        .nav-item { color: #555; font-size: 1.5rem; cursor: pointer; transition: 0.3s; padding: 5px 20px; }
-        .nav-item.active { color: var(--accent-green); background: rgba(57, 255, 20, 0.1); border-radius: 25px; }
-        .hidden { display: none; }
-        .bg-red-soft { background: rgba(255, 65, 54, 0.1) !important; border: 1px solid var(--accent-red); color: var(--accent-red); }
-        
-        input.form-control { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 12px; }
-        input.form-control:focus { background: rgba(255,255,255,0.1); color: white; border-color: var(--accent-green); box-shadow: none; }
-        
-        select.form-select { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; }
-        select.form-select option { background: #1a1a1a; color: white; }
+        .label-sm {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
 
-		#device-selector {
-    appearance: none; /* Menghilangkan panah bawaan agar lebih clean */
-    -webkit-appearance: none;
-    background-image: none;
-    cursor: pointer;
-}
+        .glow-green {
+            color: var(--accent-green);
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
 
-#device-selector:focus {
-    box-shadow: none;
-    outline: none;
-}
+        .glow-blue {
+            color: var(--accent-blue);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
 
-#loading-screen {
-    position: fixed; /* WAJIB: agar mengunci di layar */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000; /* Sesuaikan warna background */
-    z-index: 9999; /* Pastikan di atas segalanya */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-	transition: opacity 0.5s ease;
-}
+        .text-green {
+            color: var(--accent-green) !important;
+        }
 
-/* Tambahkan ini untuk memastikan saat disembunyikan benar-benar hilang */
-		.hidden {
-    		display: none !important;
-    		visibility: hidden;
-		}
+        .text-red {
+            color: var(--accent-red) !important;
+        }
 
-		/* --- STYLING PLACEHOLDER (Abu-abu Terang) --- */
-::placeholder { /* Chrome, Safari, Edge, Opera */
-    color: #877573 !important;
-    opacity: 0.9; 
-    font-size: 0.9rem;
-}
+        .text-blue {
+            color: var(--accent-blue) !important;
+        }
 
-::-moz-placeholder { /* Firefox */
-    color: #877573 !important;
-    opacity: 0.9;
-}
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            background: rgba(15, 18, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            z-index: 1000;
+        }
 
-:-ms-input-placeholder { /* IE 10-11 */
-    color: #877573 !important;
-}
+        .nav-item {
+            color: #555;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+            padding: 5px 20px;
+        }
 
-/* --- OPTIMASI INPUT SAAT DIKLIK (FOCUS) --- */
-.form-control:focus {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--accent-green); /* Garis tepi jadi hijau Melona */
-    box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); /* Efek glow hijau */
-    color: white;
-}
+        .nav-item.active {
+            color: var(--accent-green);
+            background: rgba(57, 255, 20, 0.1);
+            border-radius: 25px;
+        }
 
-/* Warna placeholder saat input sedang aktif */
-.form-control:focus::placeholder {
-    color: #ffffff !important;
-    opacity: 0.5;
-    transition: 0.3s;
-}
+        .hidden {
+            display: none;
+        }
+
+        .bg-red-soft {
+            background: rgba(255, 65, 54, 0.1) !important;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        input.form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-radius: 12px;
+        }
+
+        input.form-control:focus {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: var(--accent-green);
+            box-shadow: none;
+        }
+
+        select.form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+        }
+
+        select.form-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        #device-selector {
+            appearance: none;
+            /* Menghilangkan panah bawaan agar lebih clean */
+            -webkit-appearance: none;
+            background-image: none;
+            cursor: pointer;
+        }
+
+        #device-selector:focus {
+            box-shadow: none;
+            outline: none;
+        }
+
+        #loading-screen {
+            position: fixed;
+            /* WAJIB: agar mengunci di layar */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            /* Sesuaikan warna background */
+            z-index: 9999;
+            /* Pastikan di atas segalanya */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Untuk memastikan saat disembunyikan benar-benar hilang */
+        .hidden {
+            display: none !important;
+            visibility: hidden;
+        }
+
+        /* --- STYLING PLACEHOLDER (Abu-abu Terang) --- */
+        ::placeholder {
+            /* Chrome, Safari, Edge, Opera */
+            color: #877573 !important;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        ::-moz-placeholder {
+            /* Firefox */
+            color: #877573 !important;
+            opacity: 0.9;
+        }
+
+        :-ms-input-placeholder {
+            /* IE 10-11 */
+            color: #877573 !important;
+        }
+
+        /* --- OPTIMASI INPUT SAAT DIKLIK (FOCUS) --- */
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-green);
+            /* Garis tepi jadi hijau Melona */
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+            /* Efek glow hijau */
+            color: white;
+        }
+
+        /* Warna placeholder saat input sedang aktif */
+        .form-control:focus::placeholder {
+            color: #ffffff !important;
+            opacity: 0.5;
+            transition: 0.3s;
+        }
     </style>
 </head>
+
 <body>
-<div id="loading-screen" class="vh-100 d-flex align-items-center justify-content-center bg-dark">
-    <div class="spinner-border text-success"></div>
-</div>
-<div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center hidden">
-    <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
-        <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
-        
-        <div class="mb-3 text-start">
-            <label class="label-sm px-1">Email</label>
-            <input type="email" id="login-email" class="form-control" placeholder="Email">
-        </div>
-        
-        <div class="mb-3 text-start">
-            <label class="label-sm px-1">Password</label>
-            <div class="input-group">
-                <input type="password" id="login-pass" class="form-control" placeholder="Password">
-                <button class="btn btn-outline-secondary border-secondary-subtle" type="button" onclick="togglePassword()">
-                    <i id="toggle-icon" class="bi bi-eye"></i>
-                </button>
-            </div>
-        </div>
-        
-        <div class="mb-4 d-flex align-items-center">
-            <input type="checkbox" id="remember-me" class="form-check-input bg-dark border-secondary me-2">
-            <label for="remember-me" class="label-sm mb-0 cursor-pointer" style="text-transform: none;">Simpan Login (Ingat Saya)</label>
-        </div>
-        
-		<button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
-
-<div class="text-center mt-2">
-    <a href="#" onclick="forgotPassword()" class="label-sm text-decoration-none" style="text-transform: none; color: #888;">Lupa Password?</a>
-</div>
-
-<p id="login-error" class="text-danger small hidden mt-2"></p>
+    <div id="loading-screen" class="vh-100 d-flex align-items-center justify-content-center bg-dark">
+        <div class="spinner-border text-success"></div>
     </div>
-</div>
+    <div id="page-login" class="container vh-100 d-flex align-items-center justify-content-center hidden">
+        <div class="glass-card text-center" style="max-width: 380px; width: 90%;">
+            <h3 class="fw-bold mb-4">Melona <span class="text-green">System</span></h3>
+
+            <div class="mb-3 text-start">
+                <label class="label-sm px-1">Email</label>
+                <input type="email" id="login-email" class="form-control" placeholder="Email">
+            </div>
+
+            <div class="mb-3 text-start">
+                <label class="label-sm px-1">Password</label>
+                <div class="input-group">
+                    <input type="password" id="login-pass" class="form-control" placeholder="Password">
+                    <button class="btn btn-outline-secondary border-secondary-subtle" type="button"
+                        onclick="togglePassword()">
+                        <i id="toggle-icon" class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-4 d-flex align-items-center">
+                <input type="checkbox" id="remember-me" class="form-check-input bg-dark border-secondary me-2">
+                <label for="remember-me" class="label-sm mb-0 cursor-pointer" style="text-transform: none;">Simpan Login
+                    (Ingat Saya)</label>
+            </div>
+
+            <button onclick="handleLogin()" class="btn btn-success w-100 fw-bold py-2 mb-2">LOG IN</button>
+
+            <div class="text-center mt-2">
+                <a href="#" onclick="forgotPassword()" class="label-sm text-decoration-none"
+                    style="text-transform: none; color: #888;">Lupa Password?</a>
+            </div>
+
+            <p id="login-error" class="text-danger small hidden mt-2"></p>
+        </div>
+    </div>
 
     <div id="app-content" class="hidden">
         <div class="container pt-4">
@@ -208,45 +296,49 @@
                 <button onclick="handleLogout()" class="btn btn-sm text-red"><i class="bi bi-power fs-4"></i></button>
             </header>
 
-<div id="device-header" class="px-1 mb-3 hidden"> 
-    <div class="glass-card py-2 px-3 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center flex-grow-1" style="flex-basis: 0;">
-            <i class="bi bi-house-door text-green me-2"></i>
-            <select id="device-selector" class="form-select form-select-sm bg-transparent border-0 text-white fw-bold" onchange="switchDevice(this.value)">
-                <option value="">Memuat Daftar Alat...</option>
-            </select>
-        </div>
+            <div id="device-header" class="px-1 mb-3 hidden">
+                <div class="glass-card py-2 px-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center flex-grow-1" style="flex-basis: 0;">
+                        <i class="bi bi-house-door text-green me-2"></i>
+                        <select id="device-selector"
+                            class="form-select form-select-sm bg-transparent border-0 text-white fw-bold"
+                            onchange="switchDevice(this.value)">
+                            <option value="">Memuat Daftar Alat...</option>
+                        </select>
+                    </div>
 
-        <div class="border-start border-secondary mx-2" style="height: 20px; opacity: 0.3;"></div>
+                    <div class="border-start border-secondary mx-2" style="height: 20px; opacity: 0.3;"></div>
 
-        <div class="flex-grow-1 text-end" style="flex-basis: 0;">
-            <div id="mqtt-status" class="fw-bold text-secondary small text-nowrap">Connecting...</div>
-        </div>
-    </div>
-</div>
+                    <div class="flex-grow-1 text-end" style="flex-basis: 0;">
+                        <div id="mqtt-status" class="fw-bold text-secondary small text-nowrap">Connecting...</div>
+                    </div>
+                </div>
+            </div>
 
-			<div id="page-home" class="container">
-    <h5 class="fw-bold mb-3 mt-2">Dash<span class="text-green">board</span></h5>
-    <div id="device-list-container" class="row g-3">
-        </div>
-</div>
+            <div id="page-home" class="container">
+                <h5 class="fw-bold mb-3 mt-2">Dash<span class="text-green">board</span></h5>
+                <div id="device-list-container" class="row g-3">
+                </div>
+            </div>
 
             <div id="page-dashboard" class="hidden">
                 <div id="maintenance-banner" class="alert bg-red-soft hidden mb-4 text-center fw-bold">
                     <i class="bi bi-tools"></i> MODE MAINTENANCE: SISTEM OFF
                 </div>
-                
+
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="glass-card text-center">
                             <span class="label-sm">Usia Tanaman</span>
-                            <div class="display-5 fw-bold mt-1"><span id="hst-val">--</span><small class="fs-6 text-secondary"> HST</small></div>
+                            <div class="display-5 fw-bold mt-1"><span id="hst-val">--</span><small
+                                    class="fs-6 text-secondary"> HST</small></div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="glass-card text-center">
                             <span class="label-sm">Suhu Nutrisi</span>
-                            <div class="display-5 fw-bold mt-1"><span id="tair-val">--</span><small class="fs-6 text-secondary"> °C</small></div>
+                            <div class="display-5 fw-bold mt-1"><span id="tair-val">--</span><small
+                                    class="fs-6 text-secondary"> °C</small></div>
                         </div>
                     </div>
 
@@ -290,15 +382,18 @@
                     <div class="row g-2 text-center">
                         <div class="col-4">
                             <small class="label-sm">Dosing AB</small>
-                            <div class="fw-bold"><span id="d-ab">0</span> | <span id="t-ab" class="text-success">0</span></div>
+                            <div class="fw-bold"><span id="d-ab">0</span> | <span id="t-ab"
+                                    class="text-success">0</span></div>
                         </div>
                         <div class="col-4 border-start border-end border-secondary">
                             <small class="label-sm">pH Down</small>
-                            <div class="fw-bold"><span id="d-phd">0</span> | <span id="t-phd" class="text-danger">0</span></div>
+                            <div class="fw-bold"><span id="d-phd">0</span> | <span id="t-phd"
+                                    class="text-danger">0</span></div>
                         </div>
                         <div class="col-4">
                             <small class="label-sm">pH Up</small>
-                            <div class="fw-bold"><span id="d-phu">0</span> | <span id="t-phu" class="text-info">0</span></div>
+                            <div class="fw-bold"><span id="d-phu">0</span> | <span id="t-phu" class="text-info">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -307,7 +402,8 @@
             <div id="page-settings" class="hidden">
                 <div class="glass-card mb-4 border-top border-success border-4">
                     <h5 class="fw-bold"><i class="bi bi-droplet-half text-success"></i> Kalibrasi Debit AB Mix</h5>
-                    <button id="btn-test-pump" onclick="runPumpTest()" class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
+                    <button id="btn-test-pump" onclick="runPumpTest()"
+                        class="btn btn-outline-success btn-sm w-100 mb-3 fw-bold">
                         <i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)
                     </button>
                     <div class="row g-2">
@@ -323,7 +419,8 @@
                     <div id="diff-report" class="alert bg-dark mt-3 small hidden border border-secondary">
                         <i class="bi bi-info-circle"></i> <span id="diff-text"></span>
                     </div>
-                    <button onclick="saveFlowCal()" class="btn btn-success w-100 mt-3 fw-bold">SIMPAN KALIBRASI DEBIT</button>
+                    <button onclick="saveFlowCal()" class="btn btn-success w-100 mt-3 fw-bold">SIMPAN KALIBRASI
+                        DEBIT</button>
                 </div>
 
                 <div class="glass-card mb-4">
@@ -332,281 +429,284 @@
                         <div class="col-6">
                             <label class="label-sm">Buffer PH</label>
                             <input type="number" id="calPH" class="form-control" step="0.01" placeholder="6.86">
-                            <button onclick="sendCalibration('set_cal_ph', 'calPH')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI PH</button>
+                            <button onclick="sendCalibration('set_cal_ph', 'calPH')"
+                                class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI PH</button>
                         </div>
                         <div class="col-6">
                             <label class="label-sm">Buffer TDS</label>
                             <input type="number" id="calTDS" class="form-control" placeholder="1000">
-                            <button onclick="sendCalibration('set_cal_tds', 'calTDS')" class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI TDS</button>
+                            <button onclick="sendCalibration('set_cal_tds', 'calTDS')"
+                                class="btn btn-primary btn-sm w-100 mt-2">KALIBRASI TDS</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-<nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchPage('home', this)"><i class="bi bi-grid-fill"></i></div> <div class="nav-item" onclick="switchPage('dashboard', this)"><i class="bi bi-cpu"></i></div> <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
-</nav>
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchPage('home', this)"><i class="bi bi-grid-fill"></i></div>
+            <div class="nav-item" onclick="switchPage('dashboard', this)"><i class="bi bi-cpu"></i></div>
+            <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
+        </nav>
 
-    <script>
-        // 1. CONFIGURATION
-			const _k = "AIzaSyDIjg4h9bPs";
-			const _v = "dSGTEKgDLMy21w2IC8lmCTc";
-			const firebaseConfig = {
-    		apiKey: _k + _v,
-  			authDomain: "melona-auto-system.firebaseapp.com",
-  			// Tambahkan baris di bawah ini agar Realtime Database aktif
-  			databaseURL: "https://melona-auto-system-default-rtdb.asia-southeast1.firebasedatabase.app", 
-  			projectId: "melona-auto-system",
- 			storageBucket: "melona-auto-system.firebasestorage.app",
- 			messagingSenderId: "862866018640",
-  			appId: "1:862866018640:web:f380a39566f16a54e3dc55",
-  			measurementId: "G-1NC0VEECG8"
-		};
-
-        const MQTT_CONFIG = {
-            host: "k1e11691.ala.asia-southeast1.emqxsl.com",
-            port: 8084,
-            user: "melona_admin",
-            pass: "melona123"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-        
-        // MQTT Client Global
-        let client = null;
-        let currentDeviceId = "";
-        let lastSeen = Date.now();
-
-        // --- AUTH LOGIC ---
-        function handleLoginnn() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            const errEl = document.getElementById('login-error');
-
-            auth.signInWithEmailAndPassword(email, pass)
-                .then(() => errEl.classList.add('hidden'))
-                .catch(err => {
-                    errEl.innerText = err.message;
-                    errEl.classList.remove('hidden');
-                });
-        }
-
-// --- FITUR LIHAT PASSWORD ---
-function togglePassword() {
-    const passInput = document.getElementById('login-pass');
-    const icon = document.getElementById('toggle-icon');
-    if (passInput.type === "password") {
-        passInput.type = "text";
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
-    } else {
-        passInput.type = "password";
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
-    }
-}
-
-// --- FITUR AUTO-FILL SAAT HALAMAN DIBUKA ---
-window.onload = function() {
-    const savedEmail = localStorage.getItem('melona_email');
-    if (savedEmail) {
-        document.getElementById('login-email').value = savedEmail;
-        document.getElementById('remember-me').checked = true;
-    }
-};
-
-// --- UPDATE HANDLE LOGIN ---
-function handleLogin() {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-    const rememberMe = document.getElementById('remember-me').checked;
-    const errEl = document.getElementById('login-error');
-
-    // Atur Persistensi Firebase (LOCAL agar tidak logout saat browser tutup)
-    const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
-
-    auth.setPersistence(persistence)
-        .then(() => {
-            return auth.signInWithEmailAndPassword(email, pass);
-        })
-        .then(() => {
-            // Simpan email ke localStorage jika dicentang
-            if (rememberMe) {
-                localStorage.setItem('melona_email', email);
-            } else {
-                localStorage.removeItem('melona_email');
-            }
-            errEl.classList.add('hidden');
-        })
-        .catch(err => {
-            errEl.innerText = "Login Gagal: " + err.message;
-            errEl.classList.remove('hidden');
-        });
-}
-
-		// --- FITUR LUPA PASSWORD (RESET VIA EMAIL) ---
-function forgotPassword() {
-    Swal.fire({
-        title: 'Reset Password Melona',
-        text: 'Masukkan email Anda untuk menerima link reset:',
-        input: 'email',
-        inputPlaceholder: 'user@melona.com',
-        showCancelButton: true,
-        confirmButtonText: 'Kirim Link',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#39ff14',
-        cancelButtonColor: '#ff4136',
-        background: '#1a1d20',
-        color: '#ffffff',
-        inputAttributes: {
-            autocapitalize: 'off'
-        }
-    }).then((result) => {
-        if (result.isConfirmed && result.value) {
-            auth.sendPasswordResetEmail(result.value)
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Email Terkirim!',
-                        text: 'Silakan cek kotak masuk atau spam di email Anda.',
-                        background: '#1a1d20',
-                        color: '#ffffff'
-                    });
-                })
-                .catch((error) => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: error.message,
-                        background: '#1a1d20',
-                        color: '#ffffff'
-                    });
-                });
-        }
-    });
-}
-
-function handleLogout() {
-    Swal.fire({
-        title: 'Keluar dari Sistem?',
-        text: "Anda akan berhenti memantau Melona Dosing System Pro secara real-time.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#39ff14', // Warna hijau accent
-        cancelButtonColor: '#ff4136', // Warna merah accent
-        confirmButtonText: 'Ya, Keluar',
-        cancelButtonText: 'Batal',
-        background: '#1a1d20', // Warna gelap senada glass-card
-        color: '#ffffff',
-        backdrop: `rgba(0,0,0,0.6)`
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Jika user klik "Ya, Keluar"
-            if (client && client.isConnected()) {
-                client.disconnect();
-                console.log("MQTT Disconnected");
-            }
-            auth.signOut().then(() => {
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Sampai jumpa kembali di Melona Dosing System Pro.',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    background: '#1a1d20',
-                    color: '#ffffff'
-                });
-            });
-        }
-    });
-}
-
-auth.onAuthStateChanged(user => {
-    const loginPage = document.getElementById('page-login');
-    const appContent = document.getElementById('app-content');
-    const loadingScreen = document.getElementById('loading-screen');
-
-    // Paksa hilangkan loading screen segera setelah status diketahui
-    if (loadingScreen) {
-        loadingScreen.style.display = 'none'; // Sembunyikan lewat style
-        loadingScreen.classList.add('hidden'); // Sembunyikan lewat class CSS
-    }
-
-    if (user) {
-        console.log("Melona Auth: Login Berhasil", user.uid);
-        loginPage.classList.add('hidden');
-        appContent.classList.remove('hidden');
-
-		// --- UPDATE TANGGAL DI SINI ---
-        const dateEl = document.getElementById('display-date');
-        if (dateEl) {
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+        <script>
+            // 1. CONFIGURATION
+            const _k = "AIzaSyDIjg4h9bPs";
+            const _v = "dSGTEKgDLMy21w2IC8lmCTc";
+            const firebaseConfig = {
+                apiKey: _k + _v,
+                authDomain: "melona-auto-system.firebaseapp.com",
+                // Tambahkan baris di bawah ini agar Realtime Database aktif
+                databaseURL: "https://melona-auto-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "melona-auto-system",
+                storageBucket: "melona-auto-system.firebasestorage.app",
+                messagingSenderId: "862866018640",
+                appId: "1:862866018640:web:f380a39566f16a54e3dc55",
+                measurementId: "G-1NC0VEECG8"
             };
-            // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
-            dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
-        }
-        
-        // Load data alat milik user
-        loadUserDevices(user.uid);
-        
-        // Reset navigasi ke home
-        const navItems = document.querySelectorAll('.nav-item');
-        if(navItems.length > 0) switchPage('home', navItems[0]);
-    } else {
-        console.log("Melona Auth: Tidak ada sesi login");
-        appContent.classList.add('hidden');
-        loginPage.classList.remove('hidden');
-    }
-});
 
-        // --- DATABASE LOGIC ---
-function loadUserDevices(uid) {
-    db.ref(`users/${uid}/devices`).on('value', snapshot => {
-        const devices = snapshot.val();
-        const listContainer = document.getElementById('device-list-container');
-        const selector = document.getElementById('device-selector');
-        
-        if (selector) selector.innerHTML = "";
-        if (listContainer) listContainer.innerHTML = "";
+            const MQTT_CONFIG = {
+                host: "k1e11691.ala.asia-southeast1.emqxsl.com",
+                port: 8084,
+                user: "melona_admin",
+                pass: "melona123"
+            };
 
-        if (!devices) {
-            listContainer.innerHTML = `
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.database();
+
+            // MQTT Client Global
+            let client = null;
+            let currentDeviceId = "";
+            let lastSeen = Date.now();
+
+            // --- AUTH LOGIC ---
+            function handleLoginnn() {
+                const email = document.getElementById('login-email').value;
+                const pass = document.getElementById('login-pass').value;
+                const errEl = document.getElementById('login-error');
+
+                auth.signInWithEmailAndPassword(email, pass)
+                    .then(() => errEl.classList.add('hidden'))
+                    .catch(err => {
+                        errEl.innerText = err.message;
+                        errEl.classList.remove('hidden');
+                    });
+            }
+
+            // --- FITUR LIHAT PASSWORD ---
+            function togglePassword() {
+                const passInput = document.getElementById('login-pass');
+                const icon = document.getElementById('toggle-icon');
+                if (passInput.type === "password") {
+                    passInput.type = "text";
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    passInput.type = "password";
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            }
+
+            // --- FITUR AUTO-FILL SAAT HALAMAN DIBUKA ---
+            window.onload = function () {
+                const savedEmail = localStorage.getItem('melona_email');
+                if (savedEmail) {
+                    document.getElementById('login-email').value = savedEmail;
+                    document.getElementById('remember-me').checked = true;
+                }
+            };
+
+            // --- UPDATE HANDLE LOGIN ---
+            function handleLogin() {
+                const email = document.getElementById('login-email').value;
+                const pass = document.getElementById('login-pass').value;
+                const rememberMe = document.getElementById('remember-me').checked;
+                const errEl = document.getElementById('login-error');
+
+                // Atur Persistensi Firebase (LOCAL agar tidak logout saat browser tutup)
+                const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+
+                auth.setPersistence(persistence)
+                    .then(() => {
+                        return auth.signInWithEmailAndPassword(email, pass);
+                    })
+                    .then(() => {
+                        // Simpan email ke localStorage jika dicentang
+                        if (rememberMe) {
+                            localStorage.setItem('melona_email', email);
+                        } else {
+                            localStorage.removeItem('melona_email');
+                        }
+                        errEl.classList.add('hidden');
+                    })
+                    .catch(err => {
+                        errEl.innerText = "Login Gagal: " + err.message;
+                        errEl.classList.remove('hidden');
+                    });
+            }
+
+            // --- FITUR LUPA PASSWORD (RESET VIA EMAIL) ---
+            function forgotPassword() {
+                Swal.fire({
+                    title: 'Reset Password Melona',
+                    text: 'Masukkan email Anda untuk menerima link reset:',
+                    input: 'email',
+                    inputPlaceholder: 'user@melona.com',
+                    showCancelButton: true,
+                    confirmButtonText: 'Kirim Link',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#39ff14',
+                    cancelButtonColor: '#ff4136',
+                    background: '#1a1d20',
+                    color: '#ffffff',
+                    inputAttributes: {
+                        autocapitalize: 'off'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        auth.sendPasswordResetEmail(result.value)
+                            .then(() => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Email Terkirim!',
+                                    text: 'Silakan cek kotak masuk atau spam di email Anda.',
+                                    background: '#1a1d20',
+                                    color: '#ffffff'
+                                });
+                            })
+                            .catch((error) => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: error.message,
+                                    background: '#1a1d20',
+                                    color: '#ffffff'
+                                });
+                            });
+                    }
+                });
+            }
+
+            function handleLogout() {
+                Swal.fire({
+                    title: 'Keluar dari Sistem?',
+                    text: "Anda akan berhenti memantau Melona Dosing System Pro secara real-time.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#39ff14', // Warna hijau accent
+                    cancelButtonColor: '#ff4136', // Warna merah accent
+                    confirmButtonText: 'Ya, Keluar',
+                    cancelButtonText: 'Batal',
+                    background: '#1a1d20', // Warna gelap senada glass-card
+                    color: '#ffffff',
+                    backdrop: `rgba(0,0,0,0.6)`
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Jika user klik "Ya, Keluar"
+                        if (client && client.isConnected()) {
+                            client.disconnect();
+                            console.log("MQTT Disconnected");
+                        }
+                        auth.signOut().then(() => {
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: 'Sampai jumpa kembali di Melona Dosing System Pro.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                background: '#1a1d20',
+                                color: '#ffffff'
+                            });
+                        });
+                    }
+                });
+            }
+
+            auth.onAuthStateChanged(user => {
+                const loginPage = document.getElementById('page-login');
+                const appContent = document.getElementById('app-content');
+                const loadingScreen = document.getElementById('loading-screen');
+
+                // Paksa hilangkan loading screen segera setelah status diketahui
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none'; // Sembunyikan lewat style
+                    loadingScreen.classList.add('hidden'); // Sembunyikan lewat class CSS
+                }
+
+                if (user) {
+                    console.log("Melona Auth: Login Berhasil", user.uid);
+                    loginPage.classList.add('hidden');
+                    appContent.classList.remove('hidden');
+
+                    // --- UPDATE TANGGAL ---
+                    const dateEl = document.getElementById('display-date');
+                    if (dateEl) {
+                        const options = {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        };
+                        // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
+                        dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
+                    }
+
+                    // Load data alat milik user
+                    loadUserDevices(user.uid);
+
+                    // Reset navigasi ke home
+                    const navItems = document.querySelectorAll('.nav-item');
+                    if (navItems.length > 0) switchPage('home', navItems[0]);
+                } else {
+                    console.log("Melona Auth: Tidak ada sesi login");
+                    appContent.classList.add('hidden');
+                    loginPage.classList.remove('hidden');
+                }
+            });
+
+            // --- DATABASE LOGIC ---
+            function loadUserDevices(uid) {
+                db.ref(`users/${uid}/devices`).on('value', snapshot => {
+                    const devices = snapshot.val();
+                    const listContainer = document.getElementById('device-list-container');
+                    const selector = document.getElementById('device-selector');
+
+                    if (selector) selector.innerHTML = "";
+                    if (listContainer) listContainer.innerHTML = "";
+
+                    if (!devices) {
+                        listContainer.innerHTML = `
                 <div class="col-12 text-center mt-5 p-4 glass-card">
                     <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
                     <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
                     <button type="button" class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
                 </div>
             `;
-        } else {
-            // 1. Tambahkan tombol "+" terlebih dahulu
-            listContainer.innerHTML = `<button type="button" onclick="showSyncModal()" class="fixed-add-btn">+</button>`;
-            
-            // 2. Loop untuk merender kartu
-            // Gunakan Object.keys agar kita bisa mengurutkan jika perlu
-            const deviceIds = Object.keys(devices);
-            
-            deviceIds.forEach(id => {
-                const device = devices[id];
-                
-                // Tambah ke Selector
-                if (selector) {
-                    let opt = document.createElement('option');
-                    opt.value = id;
-                    opt.innerText = device.alias || device.name || id;
-                    selector.appendChild(opt);
-                }
+                    } else {
+                        // 1. Tambahkan tombol "+" terlebih dahulu
+                        listContainer.innerHTML = `<button type="button" onclick="showSyncModal()" class="fixed-add-btn">+</button>`;
 
-                // Buat div pembungkus untuk kartu agar tersusun vertikal
-                const cardWrapper = document.createElement('div');
-                cardWrapper.className = "col-12 mb-3"; // mb-3 memberi jarak bawah antar kartu
-                
-                cardWrapper.innerHTML = `
+                        // 2. Loop untuk merender kartu
+                        const deviceIds = Object.keys(devices);
+
+                        deviceIds.forEach(id => {
+                            const device = devices[id];
+
+                            // Tambah ke Selector
+                            if (selector) {
+                                let opt = document.createElement('option');
+                                opt.value = id;
+                                opt.innerText = device.alias || device.name || id;
+                                selector.appendChild(opt);
+                            }
+
+                            // Buat div pembungkus untuk kartu agar tersusun vertikal
+                            const cardWrapper = document.createElement('div');
+                            cardWrapper.className = "col-12 mb-3"; // mb-3 memberi jarak bawah antar kartu
+
+                            cardWrapper.innerHTML = `
                     <div class="glass-card p-3 border-start border-success border-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-white flex-grow-1">${device.alias || device.name || id}</h6>
@@ -625,436 +725,370 @@ function loadUserDevices(uid) {
                         </div>
                     </div>
                 `;
-                
-                // Tambahkan ke container
-                listContainer.appendChild(cardWrapper);
-            });
-        }
 
-        // Pemicu MQTT
-        const deviceIds = Object.keys(devices || {});
-        if (deviceIds.length > 0) {
-            if (!currentDeviceId) currentDeviceId = deviceIds[0];
-            connectMQTT(currentDeviceId);
-        }
-    });
-}
-function deleteDevice(deviceId) {
-    Swal.fire({
-        title: 'Yakin ingin menghapus alat?',
-        text: "Data alat ini akan hilang permanen dari dashboard.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const userId = auth.currentUser.uid;
-            db.ref(`users/${userId}/devices/${deviceId}`).remove()
-                .then(() => {
-                    Swal.fire('Terhapus!', 'Alat berhasil dihapus.', 'success');
-                })
-                .catch(err => {
-                    Swal.fire('Error', 'Gagal menghapus: ' + err.message, 'error');
+                            // Tambahkan ke container
+                            listContainer.appendChild(cardWrapper);
+                        });
+                    }
+
+                    // Pemicu MQTT
+                    const deviceIds = Object.keys(devices || {});
+                    if (deviceIds.length > 0) {
+                        if (!currentDeviceId) currentDeviceId = deviceIds[0];
+                        connectMQTT(currentDeviceId);
+                    }
                 });
-        }
-    });
-}
-		
-// Fungsi Klik Detail
-function viewDetail(id) {
-    document.getElementById('device-selector').value = id;
-    switchDevice(id);
-    // Pindah ke halaman dashboard
-    const navItems = document.querySelectorAll('.nav-item');
-    switchPage('dashboard', navItems[1]); // Nav ke Dashboard
-}
-
-        function claimDevice() {
-            const deviceId = document.getElementById('new-device-id').value.trim();
-            const uid = auth.currentUser.uid;
-            if (!deviceId) return alert("Masukkan ID Alat!");
-
-            db.ref(`users/${uid}/devices/${deviceId}`).set({
-                name: "GH " + deviceId,
-                added_at: Date.now()
-            }).then(() => {
-                alert("Berhasil Sinkron!");
-                document.getElementById('new-device-id').value = "";
-            });
-        }
-
-        // --- NAVIGATION & MQTT LOGIC ---
-function switchPage(pageId, el) {
-    // Sembunyikan semua halaman utama
-    document.getElementById('page-home').classList.add('hidden');
-    document.getElementById('page-dashboard').classList.add('hidden');
-    document.getElementById('page-settings').classList.add('hidden');
-    
-    // Tampilkan halaman yang dipilih
-    document.getElementById('page-' + pageId).classList.remove('hidden');
-
-    // LOGIKA BARU: Sembunyikan/Tampilkan Selector di atas
-    const deviceHeader = document.getElementById('device-header');
-    if (pageId === 'home') {
-        deviceHeader.classList.add('hidden'); // Sembunyi saat di daftar semua GH
-    } else {
-        deviceHeader.classList.remove('hidden'); // Tampil saat di detail alat atau settings
-    }
-
-	const dateEl = document.getElementById('display-date');
-    if (dateEl && dateEl.innerText === "Memuat...") {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
-    }
-    
-    // Update navigasi bawah
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    if (el) el.classList.add('active');
-}
-
-function switchDevice(deviceId) {
-    if (!deviceId) return;
-    
-    // Simpan ID yang dipilih ke variabel global tanpa memutus koneksi
-    currentDeviceId = deviceId;
-    
-    // Update tampilan dropdown selector di header
-    const selector = document.getElementById('device-selector');
-    if (selector) selector.value = deviceId;
-
-    // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
-	const banner = document.getElementById('maintenance-banner');
-	if (banner) banner.classList.add('hidden');
-    const fieldsDash = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'];
-    fieldsDash.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = "--";
-    });
-	    const fieldsCounter = ['d-ab', 'd-phd', 'd-phu', 't-ab', 't-phd', 't-phu'];
-    fieldsCounter.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = "0";
-    });
-
-    console.log("Monitoring detail alat:", deviceId);
-	
-	const statusCard = document.getElementById(`status-${deviceId}`);
-    const headerStatus = document.getElementById('mqtt-status');
-    
-    if (statusCard && headerStatus) {
-        headerStatus.innerText = statusCard.innerText; // Mengambil teks dari badge alat
-        headerStatus.className = statusCard.className + " ms-auto"; // Mengambil warna dari badge alat
-		headerStatus.style.color = statusCard.style.color;
-    } else {
-        headerStatus.innerText = "Status tidak diketahui";
-		//headerStatus.style.color = "";
-    }
-}
-
-function updateStatusUI(deviceId, isOnline) {
-    const statusElement = document.getElementById(`status-${deviceId}`);
-    if (statusElement) {
-        statusElement.innerText = isOnline ? "Online ●" : "Offline ●";
-        
-        // Perbaikan: Gunakan nilai warna yang valid
-        if (isOnline) {
-            statusElement.style.color = "#39ff14"; // Warna hijau neon Melona
-        } else {
-            statusElement.style.color = "gray";    // Warna abu-abu untuk offline
-        }
-    }
-}
-		
-function connectMQTT(deviceId) {
-    const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
-    client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
-
-client.onMessageArrived = (message) => {
-    console.log("MQTT Debug - Topik:", message.destinationName);
-    console.log("MQTT Debug - Isi:", message.payloadString);
-
-    try {
-        const topic = message.destinationName;
-        const topicParts = topic.split('/');
-        const deviceId = topicParts[1];
-        const type = topicParts[2]; 
-
-if (type === 'status') {
-    const status = message.payloadString;
-    updateStatusUI(deviceId, status === 'online');
-} else if (type === 'telemetry') {
-            const data = JSON.parse(message.payloadString);
-            lastSeen = Date.now();
-            updateHomeSummary(deviceId, data);
-            if (deviceId === currentDeviceId) {
-                updateDashboard(deviceId, data);
             }
-            updateStatusUI(deviceId, true);
-        }
-    } catch (e) { 
-        console.error("Gagal memproses data MQTT:", e); 
-    }
-};
 
-// --- BARU SETELAH ITU FUNGSI CLIENT.CONNECT DIMULAI ---
-client.connect({
-    useSSL: true, 
-    userName: MQTT_CONFIG.user, 
-    password: MQTT_CONFIG.pass,
-    onSuccess: () => {
-        client.subscribe(`melona/+/telemetry`);
-        client.subscribe(`melona/+/status`);
-        document.getElementById('mqtt-status').innerText = "Online ●";
-        document.getElementById('mqtt-status').className = "fw-bold text-success small ms-auto";
-    },
-    onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
-});
-}
-// 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
-function updateDashboard(deviceId, data) {
-	if (deviceId !== currentDeviceId) return;
-    document.getElementById('hst-val').innerText = data.hst ?? "--";
-    document.getElementById('tair-val').innerText = data.t_air ?? "--"; 
-    document.getElementById('ppm-val').innerText = data.ppm ?? "--";
-    document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    
-    document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
-    document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
-    
-    document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
-    document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
-    
-    document.getElementById('d-ab').innerText = data.d_ab ?? "0";
-    document.getElementById('d-phd').innerText = data.d_phd ?? "0";
-    document.getElementById('d-phu').innerText = data.d_phu ?? "0";
-    document.getElementById('t-ab').innerText = data.t_ab ?? "0";
-    document.getElementById('t-phd').innerText = data.t_phd ?? "0";
-    document.getElementById('t-phu').innerText = data.t_phu ?? "0";
-
-	const banner = document.getElementById('maintenance-banner');
-    if (data.sys === "OFF") {
-        banner.classList.remove('hidden');
-    } else {
-        banner.classList.add('hidden');
-    }
-}
-
-// 2. Fungsi untuk memperbarui tampilan kartu di halaman Home (Ringkasan)
-function updateHomeSummary(deviceId, data) {
-    // Deklarasi variabel cukup dilakukan sekali di sini
-    const sHst = document.getElementById(`sum-hst-${deviceId}`);
-    const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
-    const sPh = document.getElementById(`sum-ph-${deviceId}`);
-    const sTemp = document.getElementById(`sum-temp-${deviceId}`);
-    const sStatus = document.getElementById(`status-${deviceId}`); // <--- Pastikan hanya ada satu deklarasi ini
-
-    // Logika penghentian jika alat offline
-    if (sStatus && sStatus.innerText.includes("Offline")) {
-        return; 
-    }
-
-    // Update elemen hanya jika elemen tersebut ditemukan
-    if(sHst) sHst.innerText = data.hst ?? "--";
-    if(sPpm) sPpm.innerText = data.ppm ?? "--";
-    if(sPh)  sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
-    if(sTemp) sTemp.innerText = data.t_air ?? "--";
-    
-    // Update badge status ke hijau jika data masuk
-if (sStatus) {
-    sStatus.innerText = "Online ●";
-    // Menggunakan style langsung agar warna sama dengan tema aplikasi
-    sStatus.style.color = "#39ff14"; 
-    sStatus.className = "badge bg-dark small"; 
-}
-}
-
-        // MQTT Command Send
-        function sendCommand(payload) {
-            if (client && client.isConnected()) {
-                const message = new Paho.MQTT.Message(JSON.stringify(payload));
-                message.destinationName = `melona/${currentDeviceId}/cmd`;
-                client.send(message);
+            function deleteDevice(deviceId) {
+                Swal.fire({
+                    title: 'Yakin ingin menghapus alat?',
+                    text: "Data alat ini akan hilang permanen dari dashboard.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const userId = auth.currentUser.uid;
+                        db.ref(`users/${userId}/devices/${deviceId}`).remove()
+                            .then(() => {
+                                Swal.fire('Terhapus!', 'Alat berhasil dihapus.', 'success');
+                            })
+                            .catch(err => {
+                                Swal.fire('Error', 'Gagal menghapus: ' + err.message, 'error');
+                            });
+                    }
+                });
             }
-        }
 
-        // --- FEATURES ---
-        function runPumpTest() {
-            const btn = document.getElementById('btn-test-pump');
-            sendCommand({ test_pump: 'AB' });
-            btn.classList.replace('btn-outline-success', 'btn-success');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> POMPA JALAN...';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.classList.replace('btn-success', 'btn-outline-success');
-                btn.innerHTML = '<i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)';
-                btn.disabled = false;
-            }, 10000);
-        }
-
-		// Fungsi untuk menyimpan ke Firebase
-function saveNewDevice() {
-    const id = document.getElementById('deviceId').value;
-    const alias = document.getElementById('deviceAlias').value;
-    const userId = firebase.auth().currentUser.uid;
-
-    if(!id || !alias) {
-        alert("Harap isi semua kolom!");
-        return;
-    }
-
-    // Menulis ke Firebase secara otomatis
-    firebase.database().ref('users/' + userId + '/devices/' + id).set({
-        alias: alias,
-        added_at: Date.now(),
-        status: "offline"
-    }).then(() => {
-        alert("Alat " + alias + " berhasil disinkronkan!");
-        location.reload(); // Refresh halaman untuk memuat ulang daftar alat
-    });
-}
-
-// Fungsi buka modal
-function showSyncModal() {
-    const modalElement = document.getElementById('syncModal');
-    
-    // Inisialisasi ulang modal jika belum terdeteksi
-    let myModal = bootstrap.Modal.getInstance(modalElement);
-    if (!myModal) {
-        myModal = new bootstrap.Modal(modalElement);
-    }
-    
-    myModal.show();
-}
-
-function saveFlowCal() {
-    const a = parseFloat(document.getElementById('mlA').value);
-    const b = parseFloat(document.getElementById('mlB').value);
-    
-    if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
-        Swal.fire('Error', 'Masukkan nilai kalibrasi yang valid!', 'error');
-        return;
-    }
-    
-    sendCommand({ cal_flow_a: a/10, cal_flow_b: b/10 });
-    Swal.fire('Berhasil', 'Kalibrasi debit dikirim ke alat!', 'success');
-}
-
-        function sendCalibration(key, inputId) {
-            const val = document.getElementById(inputId).value;
-            if (val) {
-                sendCommand({ [key]: parseFloat(val) });
-                alert("Kalibrasi sensor terkirim!");
+            // Fungsi Klik Detail
+            function viewDetail(id) {
+                document.getElementById('device-selector').value = id;
+                switchDevice(id);
+                // Pindah ke halaman dashboard
+                const navItems = document.querySelectorAll('.nav-item');
+                switchPage('dashboard', navItems[1]); // Nav ke Dashboard
             }
-        }
 
-        // Offline Checker
-// Offline Checker yang sudah disinkronkan
-setInterval(() => {
-    if (Date.now() - lastSeen > 15000) {
-        // 1. Update Header Atas
-        const statusEl = document.getElementById('mqtt-status');
-        if (statusEl) {
-            statusEl.innerText = "Alat Offline ⚠";
-            statusEl.className = "fw-bold text-red small ms-auto";
-            statusEl.style.color = "#ff4136"; // Memastikan warna merah
-        }
+            function claimDevice() {
+                const deviceId = document.getElementById('new-device-id').value.trim();
+                const uid = auth.currentUser.uid;
+                if (!deviceId) return alert("Masukkan ID Alat!");
 
-        // 2. Update Badge di Daftar Alat (Opsional agar konsisten)
-        const badgeEl = document.getElementById(`status-${currentDeviceId}`);
-        if (badgeEl) {
-            badgeEl.innerText = "Offline ⚠";
-            badgeEl.className = "badge bg-dark text-danger small";
-            badgeEl.style.color = "#ff4136";
-        }
-    }
-}, 5000);
-    </script>
+                db.ref(`users/${uid}/devices/${deviceId}`).set({
+                    name: "GH " + deviceId,
+                    added_at: Date.now()
+                }).then(() => {
+                    alert("Berhasil Sinkron!");
+                    document.getElementById('new-device-id').value = "";
+                });
+            }
 
-<div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-        <h5 class="modal-title">Sinkronkan Alat Baru</h5>
-        <button type="button" class="btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="deviceId" class="form-control mb-2" placeholder="Masukkan ID Alat (contoh: MLN-XXXXXX)">
-        <input type="text" id="deviceAlias" class="form-control" placeholder="Beri Nama (contoh: GH1)">
-      </div>
-			<div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-success" onclick="saveNewDevice()">Simpan Alat</button>
+            // --- NAVIGATION & MQTT LOGIC ---
+            function switchPage(pageId, el) {
+                // Sembunyikan semua halaman utama
+                document.getElementById('page-home').classList.add('hidden');
+                document.getElementById('page-dashboard').classList.add('hidden');
+                document.getElementById('page-settings').classList.add('hidden');
+
+                // Tampilkan halaman yang dipilih
+                document.getElementById('page-' + pageId).classList.remove('hidden');
+
+                // LOGIKA BARU: Sembunyikan/Tampilkan Selector di atas
+                const deviceHeader = document.getElementById('device-header');
+                if (pageId === 'home') {
+                    deviceHeader.classList.add('hidden'); // Sembunyi saat di daftar semua GH
+                } else {
+                    deviceHeader.classList.remove('hidden'); // Tampil saat di detail alat atau settings
+                }
+
+                const dateEl = document.getElementById('display-date');
+                if (dateEl && dateEl.innerText === "Memuat...") {
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
+                }
+
+                // Update navigasi bawah
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                if (el) el.classList.add('active');
+            }
+
+            function switchDevice(deviceId) {
+                if (!deviceId) return;
+
+                // Simpan ID yang dipilih ke variabel global tanpa memutus koneksi
+                currentDeviceId = deviceId;
+
+                // Update tampilan dropdown selector di header
+                const selector = document.getElementById('device-selector');
+                if (selector) selector.value = deviceId;
+
+                // Bersihkan tampilan detail sejenak agar user tahu data sedang diperbarui
+                const banner = document.getElementById('maintenance-banner');
+                if (banner) banner.classList.add('hidden');
+                const fieldsDash = ['hst-val', 'tair-val', 'ppm-val', 'ph-val', 'target-ppm-val', 'target-ph-val', 'tgh-val', 'hum-val'];
+                fieldsDash.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = "--";
+                });
+                const fieldsCounter = ['d-ab', 'd-phd', 'd-phu', 't-ab', 't-phd', 't-phu'];
+                fieldsCounter.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = "0";
+                });
+
+                console.log("Monitoring detail alat:", deviceId);
+
+                const statusCard = document.getElementById(`status-${deviceId}`);
+                const headerStatus = document.getElementById('mqtt-status');
+
+                if (statusCard && headerStatus) {
+                    headerStatus.innerText = statusCard.innerText; // Mengambil teks dari badge alat
+                    headerStatus.className = statusCard.className + " ms-auto"; // Mengambil warna dari badge alat
+                    headerStatus.style.color = statusCard.style.color;
+                } else {
+                    headerStatus.innerText = "Status tidak diketahui";
+                    //headerStatus.style.color = "";
+                }
+            }
+
+            function updateStatusUI(deviceId, isOnline) {
+                const statusElement = document.getElementById(`status-${deviceId}`);
+                if (statusElement) {
+                    statusElement.innerText = isOnline ? "Online ●" : "Offline ●";
+
+                    // Perbaikan: Gunakan nilai warna yang valid
+                    if (isOnline) {
+                        statusElement.style.color = "#39ff14"; // Warna hijau neon Melona
+                    } else {
+                        statusElement.style.color = "gray";    // Warna abu-abu untuk offline
+                    }
+                }
+            }
+
+            function connectMQTT(deviceId) {
+                const clientId = "Melona_Web_" + Math.random().toString(16).substr(2, 5);
+                client = new Paho.MQTT.Client(MQTT_CONFIG.host, MQTT_CONFIG.port, clientId);
+
+                client.onMessageArrived = (message) => {
+                    console.log("MQTT Debug - Topik:", message.destinationName);
+                    console.log("MQTT Debug - Isi:", message.payloadString);
+
+                    try {
+                        const topic = message.destinationName;
+                        const topicParts = topic.split('/');
+                        const deviceId = topicParts[1];
+                        const type = topicParts[2];
+
+                        if (type === 'status') {
+                            const status = message.payloadString;
+                            updateStatusUI(deviceId, status === 'online');
+                        } else if (type === 'telemetry') {
+                            const data = JSON.parse(message.payloadString);
+                            lastSeen = Date.now();
+                            updateHomeSummary(deviceId, data);
+                            if (deviceId === currentDeviceId) {
+                                updateDashboard(deviceId, data);
+                            }
+                            updateStatusUI(deviceId, true);
+                        }
+                    } catch (e) {
+                        console.error("Gagal memproses data MQTT:", e);
+                    }
+                };
+
+                // --- BARU SETELAH ITU FUNGSI CLIENT.CONNECT DIMULAI ---
+                client.connect({
+                    useSSL: true,
+                    userName: MQTT_CONFIG.user,
+                    password: MQTT_CONFIG.pass,
+                    onSuccess: () => {
+                        client.subscribe(`melona/+/telemetry`);
+                        client.subscribe(`melona/+/status`);
+                        document.getElementById('mqtt-status').innerText = "Online ●";
+                        document.getElementById('mqtt-status').className = "fw-bold text-success small ms-auto";
+                    },
+                    onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
+                });
+            }
+            // 1. Fungsi untuk memperbarui tampilan di halaman Detail (Dashboard)
+            function updateDashboard(deviceId, data) {
+                if (deviceId !== currentDeviceId) return;
+                document.getElementById('hst-val').innerText = data.hst ?? "--";
+                document.getElementById('tair-val').innerText = data.t_air ?? "--";
+                document.getElementById('ppm-val').innerText = data.ppm ?? "--";
+                document.getElementById('ph-val').innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+
+                document.getElementById('target-ppm-val').innerText = data.trg_ppm ?? "--";
+                document.getElementById('target-ph-val').innerText = data.trg_ph ? parseFloat(data.trg_ph).toFixed(1) : "--";
+
+                document.getElementById('tgh-val').innerText = (data.t_gh ?? "--") + "°C";
+                document.getElementById('hum-val').innerText = (data.h_gh ?? "--") + "%";
+
+                document.getElementById('d-ab').innerText = data.d_ab ?? "0";
+                document.getElementById('d-phd').innerText = data.d_phd ?? "0";
+                document.getElementById('d-phu').innerText = data.d_phu ?? "0";
+                document.getElementById('t-ab').innerText = data.t_ab ?? "0";
+                document.getElementById('t-phd').innerText = data.t_phd ?? "0";
+                document.getElementById('t-phu').innerText = data.t_phu ?? "0";
+
+                const banner = document.getElementById('maintenance-banner');
+                if (data.sys === "OFF") {
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
+            // 2. Tampilan kartu di halaman Home (Ringkasan)
+            function updateHomeSummary(deviceId, data) {
+                // Deklarasi variabel cukup dilakukan sekali di sini
+                const sHst = document.getElementById(`sum-hst-${deviceId}`);
+                const sPpm = document.getElementById(`sum-ppm-${deviceId}`);
+                const sPh = document.getElementById(`sum-ph-${deviceId}`);
+                const sTemp = document.getElementById(`sum-temp-${deviceId}`);
+                const sStatus = document.getElementById(`status-${deviceId}`);
+
+                // Logika penghentian jika alat offline
+                if (sStatus && sStatus.innerText.includes("Offline")) {
+                    return;
+                }
+
+                // Update elemen hanya jika elemen tersebut ditemukan
+                if (sHst) sHst.innerText = data.hst ?? "--";
+                if (sPpm) sPpm.innerText = data.ppm ?? "--";
+                if (sPh) sPh.innerText = data.ph ? parseFloat(data.ph).toFixed(1) : "--";
+                if (sTemp) sTemp.innerText = data.t_air ?? "--";
+
+                // Update badge status ke hijau jika data masuk
+                if (sStatus) {
+                    sStatus.innerText = "Online ●";
+                    // Menggunakan style langsung agar warna sama dengan tema aplikasi
+                    sStatus.style.color = "#39ff14";
+                    sStatus.className = "badge bg-dark small";
+                }
+            }
+
+            // MQTT Command Send
+            function sendCommand(payload) {
+                if (client && client.isConnected()) {
+                    const message = new Paho.MQTT.Message(JSON.stringify(payload));
+                    message.destinationName = `melona/${currentDeviceId}/cmd`;
+                    client.send(message);
+                }
+            }
+
+            // --- FEATURES ---
+            function runPumpTest() {
+                const btn = document.getElementById('btn-test-pump');
+                sendCommand({ test_pump: 'AB' });
+                btn.classList.replace('btn-outline-success', 'btn-success');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> POMPA JALAN...';
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.classList.replace('btn-success', 'btn-outline-success');
+                    btn.innerHTML = '<i class="bi bi-play-circle"></i> JALANKAN POMPA A+B (10 DETIK)';
+                    btn.disabled = false;
+                }, 10000);
+            }
+
+            // Fungsi untuk menyimpan ke Firebase
+            function saveNewDevice() {
+                const id = document.getElementById('deviceId').value;
+                const alias = document.getElementById('deviceAlias').value;
+                const userId = firebase.auth().currentUser.uid;
+
+                if (!id || !alias) {
+                    alert("Harap isi semua kolom!");
+                    return;
+                }
+
+                // Menulis ke Firebase secara otomatis
+                firebase.database().ref('users/' + userId + '/devices/' + id).set({
+                    alias: alias,
+                    added_at: Date.now(),
+                    status: "offline"
+                }).then(() => {
+                    alert("Alat " + alias + " berhasil disinkronkan!");
+                    location.reload(); // Refresh halaman untuk memuat ulang daftar alat
+                });
+            }
+
+            // Fungsi buka modal
+            function showSyncModal() {
+                const modalElement = document.getElementById('syncModal');
+
+                // Inisialisasi ulang modal jika belum terdeteksi
+                let myModal = bootstrap.Modal.getInstance(modalElement);
+                if (!myModal) {
+                    myModal = new bootstrap.Modal(modalElement);
+                }
+
+                myModal.show();
+            }
+
+            function saveFlowCal() {
+                const a = parseFloat(document.getElementById('mlA').value);
+                const b = parseFloat(document.getElementById('mlB').value);
+
+                if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) {
+                    Swal.fire('Error', 'Masukkan nilai kalibrasi yang valid!', 'error');
+                    return;
+                }
+
+                sendCommand({ cal_flow_a: a / 10, cal_flow_b: b / 10 });
+                Swal.fire('Berhasil', 'Kalibrasi debit dikirim ke alat!', 'success');
+            }
+
+            function sendCalibration(key, inputId) {
+                const val = document.getElementById(inputId).value;
+                if (val) {
+                    sendCommand({ [key]: parseFloat(val) });
+                    alert("Kalibrasi sensor terkirim!");
+                }
+            }
+
+            // Offline Checker
+            setInterval(() => {
+                if (Date.now() - lastSeen > 15000) {
+                    // 1. Update Header Atas
+                    const statusEl = document.getElementById('mqtt-status');
+                    if (statusEl) {
+                        statusEl.innerText = "Alat Offline ⚠";
+                        statusEl.className = "fw-bold text-red small ms-auto";
+                        statusEl.style.color = "#ff4136"; // Memastikan warna merah
+                    }
+
+                    // 2. Update Badge di Daftar Alat (Opsional agar konsisten)
+                    const badgeEl = document.getElementById(`status-${currentDeviceId}`);
+                    if (badgeEl) {
+                        badgeEl.innerText = "Offline ⚠";
+                        badgeEl.className = "badge bg-dark text-danger small";
+                        badgeEl.style.color = "#ff4136";
+                    }
+                }
+            }, 5000);
+        </script>
+
+        <div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white border-secondary">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Sinkronkan Alat Baru</h5>
+                        <button type="button" class="btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="deviceId" class="form-control mb-2"
+                            placeholder="Masukkan ID Alat (contoh: MLN-XXXXXX)">
+                        <input type="text" id="deviceAlias" class="form-control" placeholder="Beri Nama (contoh: GH1)">
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-success" onclick="saveNewDevice()">Simpan Alat</button>
+                    </div>
+                </div>
             </div>
-    </div>
-  </div>
-		
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
