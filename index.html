@@ -759,14 +759,17 @@ function switchDevice(deviceId) {
     });
 
     console.log("Monitoring detail alat:", deviceId);
+	
 	const statusCard = document.getElementById(`status-${deviceId}`);
     const headerStatus = document.getElementById('mqtt-status');
     
     if (statusCard && headerStatus) {
         headerStatus.innerText = statusCard.innerText; // Mengambil teks dari badge alat
         headerStatus.className = statusCard.className + " ms-auto"; // Mengambil warna dari badge alat
+		headerStatus.style.color = statusCard.style.color;
     } else {
         headerStatus.innerText = "Status tidak diketahui";
+		headerStatus.style.color = "";
     }
 }
 
@@ -990,6 +993,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
