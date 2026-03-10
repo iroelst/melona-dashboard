@@ -773,11 +773,17 @@ function switchDevice(deviceId) {
     }
 }
 
-	function updateStatusUI(deviceId, isOnline) {
+function updateStatusUI(deviceId, isOnline) {
     const statusElement = document.getElementById(`status-${deviceId}`);
     if (statusElement) {
         statusElement.innerText = isOnline ? "Online ●" : "Offline ●";
-        statusElement.style.color = isOnline ? "text-success" : "gray";
+        
+        // Perbaikan: Gunakan nilai warna yang valid
+        if (isOnline) {
+            statusElement.style.color = "#39ff14"; // Warna hijau neon Melona
+        } else {
+            statusElement.style.color = "gray";    // Warna abu-abu untuk offline
+        }
     }
 }
 		
@@ -1006,6 +1012,7 @@ setInterval(() => {
 		
 </body>
 </html>
+
 
 
 
