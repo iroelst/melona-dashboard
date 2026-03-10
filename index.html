@@ -759,13 +759,22 @@ function switchDevice(deviceId) {
     });
 
     console.log("Monitoring detail alat:", deviceId);
+	const statusCard = document.getElementById(`status-${deviceId}`);
+    const headerStatus = document.getElementById('mqtt-status');
+    
+    if (statusCard && headerStatus) {
+        headerStatus.innerText = statusCard.innerText; // Mengambil teks dari badge alat
+        headerStatus.className = statusCard.className + " ms-auto"; // Mengambil warna dari badge alat
+    } else {
+        headerStatus.innerText = "Status tidak diketahui";
+    }
 }
 
 	function updateStatusUI(deviceId, isOnline) {
     const statusElement = document.getElementById(`status-${deviceId}`);
     if (statusElement) {
         statusElement.innerText = isOnline ? "Online ●" : "Offline ●";
-        statusElement.style.color = isOnline ? "green" : "gray";
+        statusElement.style.color = isOnline ? "yellow" : "gray";
     }
 }
 		
@@ -864,10 +873,12 @@ function updateHomeSummary(deviceId, data) {
     if(sTemp) sTemp.innerText = data.t_air ?? "--";
     
     // Update badge status ke hijau jika data masuk
-    if (sStatus) {
-        sStatus.innerText = "Online ●";
-        sStatus.className = "badge bg-dark text-success small"; 
-    }
+if (sStatus) {
+    sStatus.innerText = "Online ●";
+    // Menggunakan style langsung agar warna sama dengan tema aplikasi
+    sStatus.style.color = "#39ff14"; 
+    sStatus.className = "badge bg-dark small"; 
+}
 }
 
         // MQTT Command Send
@@ -979,6 +990,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
