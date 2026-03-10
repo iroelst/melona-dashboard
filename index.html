@@ -964,13 +964,26 @@ function saveFlowCal() {
         }
 
         // Offline Checker
-        setInterval(() => {
-            if (Date.now() - lastSeen > 15000) {
-                const statusEl = document.getElementById('mqtt-status');
-                statusEl.innerText = "Alat Offline ⚠";
-                statusEl.className = "fw-bold text-red small ms-auto";
-            }
-        }, 5000);
+// Offline Checker yang sudah disinkronkan
+setInterval(() => {
+    if (Date.now() - lastSeen > 15000) {
+        // 1. Update Header Atas
+        const statusEl = document.getElementById('mqtt-status');
+        if (statusEl) {
+            statusEl.innerText = "Alat Offline ⚠";
+            statusEl.className = "fw-bold text-red small ms-auto";
+            statusEl.style.color = "#ff4136"; // Memastikan warna merah
+        }
+
+        // 2. Update Badge di Daftar Alat (Opsional agar konsisten)
+        const badgeEl = document.getElementById(`status-${currentDeviceId}`);
+        if (badgeEl) {
+            badgeEl.innerText = "Offline ⚠";
+            badgeEl.className = "badge bg-dark text-danger small";
+            badgeEl.style.color = "#ff4136";
+        }
+    }
+}, 5000);
     </script>
 
 <div class="modal fade" id="syncModal" tabindex="-1" aria-hidden="true">
@@ -993,6 +1006,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
