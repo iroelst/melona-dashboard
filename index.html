@@ -570,95 +570,75 @@ function loadUserDevices(uid) {
     db.ref(`users/${uid}/devices`).on('value', snapshot => {
         const devices = snapshot.val();
         const listContainer = document.getElementById('device-list-container');
-        const selector = document.getElementById('device-selector'); // Pastikan ini ada
+        const selector = document.getElementById('device-selector');
         
-        // Bersihkan kontainer sebelum mengisi
         if (selector) selector.innerHTML = "";
         if (listContainer) listContainer.innerHTML = "";
 
-        // --- LOGIKA DASHBOARD KOSONG ---
-if (!devices) {
-    listContainer.innerHTML = `
-        <div class="col-12 text-center mt-5 p-4 glass-card">
-            <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
-            <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
-            <p class="text-secondary">Silakan klik tombol di bawah untuk mulai.</p>
-            <button type="button" class="btn btn-success mt-3" onclick="showSyncModal()">
-                + Sinkronkan Alat Baru
-            </button>
-        </div>
-    `;
-} else {
-            // --- KASUS 2: SUDAH ADA ALAT ---
-            // Tampilkan tombol "+" minimalis di atas daftar kartu
+        if (!devices) {
             listContainer.innerHTML = `
-                <button type="button" 
-        onclick="showSyncModal()" 
-        class="fixed-add-btn">
-    +
-</button>
-`;
-}
+                <div class="col-12 text-center mt-5 p-4 glass-card">
+                    <i class="bi bi-cpu" style="font-size: 3rem; color: #39ff14;"></i>
+                    <h5 class="text-white mt-3">Belum ada alat terdaftar</h5>
+                    <button type="button" class="btn btn-success mt-3" onclick="showSyncModal()">+ Sinkronkan Alat Baru</button>
+                </div>
+            `;
+        } else {
+            // 1. Tambahkan tombol "+" terlebih dahulu
+            listContainer.innerHTML = `<button type="button" onclick="showSyncModal()" class="fixed-add-btn">+</button>`;
+            
+            // 2. Loop untuk merender kartu
+            // Gunakan Object.keys agar kita bisa mengurutkan jika perlu
+            const deviceIds = Object.keys(devices);
+            
+            deviceIds.forEach(id => {
+                const device = devices[id];
+                
+                // Tambah ke Selector
+                if (selector) {
+                    let opt = document.createElement('option');
+                    opt.value = id;
+                    opt.innerText = device.alias || device.name || id;
+                    selector.appendChild(opt);
+                }
 
-        // --- RENDER JIKA ADA ALAT ---
-        for (let id in devices) {
-            // 1. Tambah ke Dropdown Selector (jika ada)
-            if (selector) {
-                let opt = document.createElement('option');
-                opt.value = id;
-                opt.innerText = devices[id].alias || devices[id].name || id;
-                selector.appendChild(opt);
-            }
-
-            // 2. Buat Card Ringkasan
-            const cardHtml = `
-                <div class="col-12 mb-1">
+                // Buat div pembungkus untuk kartu agar tersusun vertikal
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = "col-12 mb-3"; // mb-3 memberi jarak bawah antar kartu
+                
+                cardWrapper.innerHTML = `
                     <div class="glass-card p-3 border-start border-success border-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0 text-white flex-grow-1">${devices[id].alias || devices[id].name || id}</h6>
-							<button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')" title="Hapus Alat">
-                			<i class="bi bi-trash"></i>
-            				</button>
+                            <h6 class="fw-bold mb-0 text-white flex-grow-1">${device.alias || device.name || id}</h6>
+                            <button class="btn btn-sm btn-link text-danger p-0 mx-2" onclick="deleteDevice('${id}')"><i class="bi bi-trash"></i></button>
                             <span id="status-${id}" class="badge bg-dark text-secondary small" style="font-size: 0.6rem;">Offline</span>
                         </div>
-                        
                         <div class="d-flex justify-content-between text-center align-items-center bg-dark bg-opacity-25 rounded-3 py-2 px-1">
-                            <div class="flex-fill">
-                                <small class="label-sm d-block" style="font-size:0.55rem">HST</small>
-                                <span id="sum-hst-${id}" class="fw-bold small text-white">--</span>
-                            </div>
-                            <div class="flex-fill border-start border-secondary border-opacity-25">
-                                <small class="label-sm d-block" style="font-size:0.55rem">PPM</small>
-                                <span id="sum-ppm-${id}" class="fw-bold small text-green">--</span>
-                            </div>
-                            <div class="flex-fill border-start border-secondary border-opacity-25">
-                                <small class="label-sm d-block" style="font-size:0.55rem">pH</small>
-                                <span id="sum-ph-${id}" class="fw-bold small text-blue">--</span>
-                            </div>
-                            <div class="flex-fill border-start border-secondary border-opacity-25">
-                                <small class="label-sm d-block" style="font-size:0.55rem">Suhu</small>
-                                <span id="sum-temp-${id}" class="fw-bold small text-white">--</span><small style="font-size:0.6rem"> °C</small>
-                            </div>
+                            <div class="flex-fill"><small class="label-sm d-block">HST</small><span id="sum-hst-${id}" class="fw-bold small text-white">--</span></div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25"><small class="label-sm d-block">PPM</small><span id="sum-ppm-${id}" class="fw-bold small text-green">--</span></div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25"><small class="label-sm d-block">pH</small><span id="sum-ph-${id}" class="fw-bold small text-blue">--</span></div>
+                            <div class="flex-fill border-start border-secondary border-opacity-25"><small class="label-sm d-block">Suhu</small><span id="sum-temp-${id}" class="fw-bold small text-white">--</span></div>
                         </div>
-						<hr class="border-secondary my-2">
+                        <hr class="border-secondary my-2">
                         <div class="text-center mt-2">
                             <small class="text-secondary" onclick="viewDetail('${id}')" style="cursor:pointer; font-size: 0.75rem;">Klik untuk detail <i class="bi bi-chevron-right"></i></small>
                         </div>
                     </div>
-       	 		</div>
-            `;
-            if (listContainer) listContainer.innerHTML += cardHtml;
+                `;
+                
+                // Tambahkan ke container
+                listContainer.appendChild(cardWrapper);
+            });
         }
 
-        // Auto-switch ke perangkat pertama jika belum ada yang terpilih
-const deviceIds = Object.keys(devices);
-if (deviceIds.length > 0) {
-    if (!currentDeviceId) currentDeviceId = deviceIds[0];
-    connectMQTT(currentDeviceId); // Pemicu koneksi pertama kali
-}
+        // Pemicu MQTT
+        const deviceIds = Object.keys(devices || {});
+        if (deviceIds.length > 0) {
+            if (!currentDeviceId) currentDeviceId = deviceIds[0];
+            connectMQTT(currentDeviceId);
+        }
     });
 }
-
 function deleteDevice(deviceId) {
     Swal.fire({
         title: 'Yakin ingin menghapus alat?',
@@ -1012,6 +992,7 @@ setInterval(() => {
 		
 </body>
 </html>
+
 
 
 
