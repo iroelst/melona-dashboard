@@ -818,7 +818,7 @@ client.connect({
         client.subscribe(`melona/+/telemetry`);
         client.subscribe(`melona/+/status`);
         document.getElementById('mqtt-status').innerText = "Online ●";
-        document.getElementById('mqtt-status').className = "fw-bold text-green small ms-auto";
+        document.getElementById('mqtt-status').className = "fw-bold text-success small ms-auto";
     },
     onFailure: (e) => setTimeout(() => connectMQTT(deviceId), 5000)
 });
@@ -876,7 +876,7 @@ function updateHomeSummary(deviceId, data) {
 if (sStatus) {
     sStatus.innerText = "Online ●";
     // Menggunakan style langsung agar warna sama dengan tema aplikasi
-    //sStatus.style.color = "text-success"; 
+    sStatus.style.color = "text-success"; 
     sStatus.className = "badge bg-dark small"; 
 }
 }
@@ -990,6 +990,7 @@ function saveFlowCal() {
 		
 </body>
 </html>
+
 
 
 
