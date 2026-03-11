@@ -695,7 +695,9 @@ let melonaChart;
                         dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
                     }
                     
-                    initChart();
+                    if (pageId === 'dashboard' && !melonaChart) {
+        initChart();
+    }
                     
                     // Load data alat milik user
                     loadUserDevices(user.uid);
@@ -987,6 +989,7 @@ function updateChart(key) {
                         } else if (type === 'telemetry') {
                             const data = JSON.parse(message.payloadString);
                             lastSeen = Date.now();
+                            processDataEntry(data);
                             updateHomeSummary(deviceId, data);
                             if (deviceId === currentDeviceId) {
                                 updateDashboard(deviceId, data);
@@ -1251,6 +1254,7 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
 
 
