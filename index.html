@@ -469,6 +469,20 @@
             <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
         </nav>
 
+        const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  background: '#1a1d20',
+  color: '#ffffff',
+  didOpen: (toast) => {
+    toast.addEventListener('mouseenter', Swal.stopTimer)
+    toast.addEventListener('mouseleave', Swal.resumeTimer)
+  }
+});
+
         <script>
             // 1. CONFIGURATION
             const _k = "AIzaSyDIjg4h9bPs";
@@ -1099,7 +1113,10 @@ function saveNewDevice() {
     client.send(message);
 
     console.log("Mengirim ke MQTT:", payload);
-    alert("Perintah kirim target berhasil!");
+    Toast.fire({
+  icon: 'success',
+  title: 'Target Nutrisi Diperbarui'
+});
 }
 
 
@@ -1107,7 +1124,10 @@ function saveNewDevice() {
                 const val = document.getElementById(inputId).value;
                 if (val) {
                     sendCommand({ [key]: parseFloat(val) });
-                    alert("Kalibrasi sensor terkirim!");
+                    Toast.fire({
+  icon: 'info',
+  title: 'Perintah Kalibrasi Terkirim'
+});
                 }
             }
 
@@ -1153,4 +1173,5 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
