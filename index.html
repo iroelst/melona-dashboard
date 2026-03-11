@@ -521,6 +521,18 @@
             const auth = firebase.auth();
             const db = firebase.database();
 
+            // Struktur data untuk 70 hari (HST 1-70)
+const fullHistory = {
+    ppm:   { max: new Array(70).fill(null), min: new Array(70).fill(null) },
+    ph:    { max: new Array(70).fill(null), min: new Array(70).fill(null) },
+    t_air: { max: new Array(70).fill(null), min: new Array(70).fill(null) },
+    t_gh:  { max: new Array(70).fill(null), min: new Array(70).fill(null) },
+    h_gh:  { max: new Array(70).fill(null), min: new Array(70).fill(null) }
+};
+
+let melonaChart;
+
+
             // MQTT Client Global
             let client = null;
             let currentDeviceId = "";
@@ -795,36 +807,47 @@
                 });
             }
 
-            let melonaChart;
-        let currentMode = 'nutrisi';
-        const chartData = {
-            labels: [],
-            datasets: [
-                { label: 'PPM', borderColor: '#39ff14', data: [], yAxisID: 'y', tension: 0.4, hidden: false, fill: true, backgroundColor: 'rgba(57, 255, 20, 0.05)' },
-                { label: 'pH', borderColor: '#00d4ff', data: [], yAxisID: 'y1', tension: 0.4, hidden: false },
-                { label: 'Suhu Nutrisi', borderColor: '#ff9f40', data: [], yAxisID: 'y1', tension: 0.4, hidden: false },
-                { label: 'Suhu GH', borderColor: '#ff4136', data: [], yAxisID: 'y1', tension: 0.4, hidden: true },
-                { label: 'Hum GH', borderColor: '#ffce56', data: [], yAxisID: 'y', tension: 0.4, hidden: true }
-            ]
-        };
+            function processDataEntry(data) {
+    const hstIndex = parseInt(data.hst) - 1;
+    if (isNaN(hstIndex) || hstIndex < 0 || hstIndex >= 70) return;
+
+    const metrics = ['ppm', 'ph', 't_air', 't_gh', 'h_gh'];
+    metrics.forEach(key => {
+        if (data[key] !== undefined) {
+            const val = parseFloat(data[key]);
+            // Update Max
+            if (fullHistory[key].max[hstIndex] === null || val > fullHistory[key].max[hstIndex]) {
+                fullHistory[key].max[hstIndex] = val;
+            }
+            // Update Min
+            if (fullHistory[key].min[hstIndex] === null || val < fullHistory[key].min[hstIndex]) {
+                fullHistory[key].min[hstIndex] = val;
+            }
+        }
+    });
+}
 
         function initChart() {
-            const ctx = document.getElementById('melonaChart').getContext('2d');
-            melonaChart = new Chart(ctx, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#fff', font: { size: 10 } } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 } } },
-                        y: { position: 'left', title: { display: true, text: 'PPM / Hum', color: '#888' }, ticks: { color: '#888' } },
-                        y1: { position: 'right', title: { display: true, text: 'pH / Temp', color: '#888' }, ticks: { color: '#888' }, grid: { drawOnChartArea: false } }
-                    }
-                }
-            });
-        }
+    const ctx = document.getElementById('melonaChart').getContext('2d');
+    melonaChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 70}, (_, i) => i + 1), // X-Axis 1-70
+            datasets: [
+                { label: 'MAX', borderColor: '#ff4136', data: [], tension: 0.4, fill: false },
+                { label: 'MIN', borderColor: '#00d4ff', data: [], tension: 0.4, fill: false }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function updateChart(key) {
+    melonaChart.data.datasets[0].data = fullHistory[key].max;
+    melonaChart.data.datasets[1].data = fullHistory[key].min;
+    melonaChart.update();
+}
+
 
         function updateChartMode(mode) {
             currentMode = mode;
@@ -1228,6 +1251,7 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
 
 
