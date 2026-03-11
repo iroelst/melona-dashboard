@@ -397,17 +397,7 @@
                     </div>
                 </div>
 
-                <div class="glass-card mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="label-sm mb-0"><i class="bi bi-graph-up text-green"></i> Tren Alat</h6>
-        <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-success btn-sm py-0" onclick="updateChartMode('nutrisi')" style="font-size: 0.7rem;">Nutrisi</button>
-            <button type="button" class="btn btn-outline-info btn-sm py-0" onclick="updateChartMode('lingkungan')" style="font-size: 0.7rem;">Iklim</button>
-        </div>
-    </div>
-    <canvas id="melonaChart" style="max-height: 220px;"></canvas>
-</div>
-            </div>
+                </div>
 
             <div id="page-settings" class="hidden">
                 <div class="glass-card mb-4 border-top border-success border-2">
@@ -521,18 +511,7 @@
             const auth = firebase.auth();
             const db = firebase.database();
 
-            // Struktur data untuk 70 hari (HST 1-70)
-const fullHistory = {
-    ppm:   { max: new Array(70).fill(null), min: new Array(70).fill(null) },
-    ph:    { max: new Array(70).fill(null), min: new Array(70).fill(null) },
-    t_air: { max: new Array(70).fill(null), min: new Array(70).fill(null) },
-    t_gh:  { max: new Array(70).fill(null), min: new Array(70).fill(null) },
-    h_gh:  { max: new Array(70).fill(null), min: new Array(70).fill(null) }
-};
-
-let melonaChart;
-
-
+            
             // MQTT Client Global
             let client = null;
             let currentDeviceId = "";
@@ -694,10 +673,7 @@ let melonaChart;
                         // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
                         dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
                     }
-                    
-                    if (pageId === 'dashboard' && !melonaChart) {
-        initChart();
-    }
+                
                     
                     // Load data alat milik user
                     loadUserDevices(user.uid);
@@ -809,60 +785,7 @@ let melonaChart;
                 });
             }
 
-            function processDataEntry(data) {
-    const hstIndex = parseInt(data.hst) - 1;
-    if (isNaN(hstIndex) || hstIndex < 0 || hstIndex >= 70) return;
-
-    const metrics = ['ppm', 'ph', 't_air', 't_gh', 'h_gh'];
-    metrics.forEach(key => {
-        if (data[key] !== undefined) {
-            const val = parseFloat(data[key]);
-            // Update Max
-            if (fullHistory[key].max[hstIndex] === null || val > fullHistory[key].max[hstIndex]) {
-                fullHistory[key].max[hstIndex] = val;
-            }
-            // Update Min
-            if (fullHistory[key].min[hstIndex] === null || val < fullHistory[key].min[hstIndex]) {
-                fullHistory[key].min[hstIndex] = val;
-            }
-        }
-    });
-}
-
-        function initChart() {
-    const ctx = document.getElementById('melonaChart').getContext('2d');
-    melonaChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: Array.from({length: 70}, (_, i) => i + 1), // X-Axis 1-70
-            datasets: [
-                { label: 'MAX', borderColor: '#ff4136', data: [], tension: 0.4, fill: false },
-                { label: 'MIN', borderColor: '#00d4ff', data: [], tension: 0.4, fill: false }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-}
-
-function updateChart(key) {
-    melonaChart.data.datasets[0].data = fullHistory[key].max;
-    melonaChart.data.datasets[1].data = fullHistory[key].min;
-    melonaChart.update();
-}
-
-
-        function updateChartMode(mode) {
-            currentMode = mode;
-            if (mode === 'nutrisi') {
-                [0, 1, 2].forEach(i => melonaChart.setDatasetVisibility(i, true));
-                [3, 4].forEach(i => melonaChart.setDatasetVisibility(i, false));
-            } else {
-                [0, 1, 2].forEach(i => melonaChart.setDatasetVisibility(i, false));
-                [3, 4].forEach(i => melonaChart.setDatasetVisibility(i, true));
-            }
-            melonaChart.update();
-        }
-
+ 
             // Fungsi Klik Detail
             function viewDetail(id) {
                 document.getElementById('device-selector').value = id;
@@ -989,7 +912,7 @@ function updateChart(key) {
                         } else if (type === 'telemetry') {
                             const data = JSON.parse(message.payloadString);
                             lastSeen = Date.now();
-                            processDataEntry(data);
+                            
                             updateHomeSummary(deviceId, data);
                             if (deviceId === currentDeviceId) {
                                 updateDashboard(deviceId, data);
@@ -1254,6 +1177,7 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
 
 
