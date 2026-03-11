@@ -468,21 +468,7 @@
             <div class="nav-item" onclick="switchPage('dashboard', this)"><i class="bi bi-cpu"></i></div>
             <div class="nav-item" onclick="switchPage('settings', this)"><i class="bi bi-sliders"></i></div>
         </nav>
-
-        const Toast = Swal.mixin({
-  toast: true,
-  position: 'top-end',
-  showConfirmButton: false,
-  timer: 3000,
-  timerProgressBar: true,
-  background: '#1a1d20',
-  color: '#ffffff',
-  didOpen: (toast) => {
-    toast.addEventListener('mouseenter', Swal.stopTimer)
-    toast.addEventListener('mouseleave', Swal.resumeTimer)
-  }
-});
-
+        
         <script>
             // 1. CONFIGURATION
             const _k = "AIzaSyDIjg4h9bPs";
@@ -505,6 +491,20 @@
                 user: "melona_admin",
                 pass: "melona123"
             };
+
+              const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  background: '#1a1d20',
+  color: '#ffffff',
+  didOpen: (toast) => {
+    toast.addEventListener('mouseenter', Swal.stopTimer)
+    toast.addEventListener('mouseleave', Swal.resumeTimer)
+  }
+});
 
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
@@ -1173,5 +1173,6 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
 
