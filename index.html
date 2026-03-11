@@ -1007,12 +1007,12 @@ function saveNewDevice() {
     const user = firebase.auth().currentUser;
 
     if (!user) {
-        alert("Anda harus login terlebih dahulu!");
+        Swal.fire('Error', 'Anda harus login terlebih dahulu!', 'error');
         return;
     }
 
     if (!id || !alias) {
-        alert("Harap isi semua kolom!");
+        Swal.fire('Peringatan', 'Harap isi semua kolom!', 'warning');
         return;
     }
 
@@ -1023,23 +1023,30 @@ function saveNewDevice() {
         added_at: Date.now(),
         status: "offline"
     }).then(() => {
-        alert("Alat " + alias + " berhasil disinkronkan!");
-        
-        // 1. Tutup modal secara manual tanpa refresh
+        // --- 1. TUTUP MODAL TERLEBIH DAHULU ---
         const modalElement = document.getElementById('syncModal');
         const modalInstance = bootstrap.Modal.getInstance(modalElement);
-        modalInstance.hide();
+        if (modalInstance) {
+            modalInstance.hide();
+        }
 
-        // 2. Kosongkan input agar bersih saat dibuka lagi
+        // --- 2. KOSONGKAN INPUT ---
         document.getElementById('deviceId').value = "";
         document.getElementById('deviceAlias').value = "";
 
-        // 3. (Opsional) Panggil fungsi untuk update list alat di UI saja
-        // updateDeviceListUI(); 
+        // --- 3. TAMPILKAN NOTIFIKASI (MENGGUNAKAN SWEETALERT2) ---
+        Swal.fire({
+            title: 'Berhasil!',
+            text: `Alat ${alias} berhasil disinkronkan!`,
+            icon: 'success',
+            background: '#1a1d20',
+            color: '#ffffff',
+            confirmButtonColor: '#198754'
+        });
         
     }).catch((error) => {
         console.error("Gagal menyimpan:", error);
-        alert("Terjadi kesalahan saat menyimpan.");
+        Swal.fire('Error', 'Terjadi kesalahan saat menyimpan.', 'error');
     });
 }
 
@@ -1146,3 +1153,4 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
