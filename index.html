@@ -502,20 +502,6 @@
             let currentDeviceId = "";
             let lastSeen = Date.now();
 
-            // --- AUTH LOGIC ---
-            function handleLoginnn() {
-                const email = document.getElementById('login-email').value;
-                const pass = document.getElementById('login-pass').value;
-                const errEl = document.getElementById('login-error');
-
-                auth.signInWithEmailAndPassword(email, pass)
-                    .then(() => errEl.classList.add('hidden'))
-                    .catch(err => {
-                        errEl.innerText = err.message;
-                        errEl.classList.remove('hidden');
-                    });
-            }
-
             // --- FITUR LIHAT PASSWORD ---
             function togglePassword() {
                 const passInput = document.getElementById('login-pass');
@@ -1015,26 +1001,48 @@
             }
 
             // Fungsi untuk menyimpan ke Firebase
-            function saveNewDevice() {
-                const id = document.getElementById('deviceId').value;
-                const alias = document.getElementById('deviceAlias').value;
-                const userId = firebase.auth().currentUser.uid;
+function saveNewDevice() {
+    const id = document.getElementById('deviceId').value;
+    const alias = document.getElementById('deviceAlias').value;
+    const user = firebase.auth().currentUser;
 
-                if (!id || !alias) {
-                    alert("Harap isi semua kolom!");
-                    return;
-                }
+    if (!user) {
+        alert("Anda harus login terlebih dahulu!");
+        return;
+    }
 
-                // Menulis ke Firebase secara otomatis
-                firebase.database().ref('users/' + userId + '/devices/' + id).set({
-                    alias: alias,
-                    added_at: Date.now(),
-                    status: "offline"
-                }).then(() => {
-                    alert("Alat " + alias + " berhasil disinkronkan!");
-                    location.reload(); // Refresh halaman untuk memuat ulang daftar alat
-                });
-            }
+    if (!id || !alias) {
+        alert("Harap isi semua kolom!");
+        return;
+    }
+
+    const userId = user.uid;
+
+    firebase.database().ref('users/' + userId + '/devices/' + id).set({
+        alias: alias,
+        added_at: Date.now(),
+        status: "offline"
+    }).then(() => {
+        alert("Alat " + alias + " berhasil disinkronkan!");
+        
+        // 1. Tutup modal secara manual tanpa refresh
+        const modalElement = document.getElementById('syncModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+
+        // 2. Kosongkan input agar bersih saat dibuka lagi
+        document.getElementById('deviceId').value = "";
+        document.getElementById('deviceAlias').value = "";
+
+        // 3. (Opsional) Panggil fungsi untuk update list alat di UI saja
+        // updateDeviceListUI(); 
+        
+    }).catch((error) => {
+        console.error("Gagal menyimpan:", error);
+        alert("Terjadi kesalahan saat menyimpan.");
+    });
+}
+
 
             // Fungsi buka modal
             function showSyncModal() {
@@ -1137,15 +1145,4 @@
                 </div>
             </div>
 </body>
-
-
 </html>
-
-
-
-
-
-
-
-
-
