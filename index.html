@@ -683,7 +683,9 @@
                         // Menggunakan locale 'id-ID' untuk Bahasa Indonesia
                         dateEl.innerText = new Date().toLocaleDateString('id-ID', options);
                     }
-
+                    
+                    initChart();
+                    
                     // Load data alat milik user
                     loadUserDevices(user.uid);
 
@@ -1227,6 +1229,7 @@ function saveNewDevice() {
             </div>
 </body>
 </html>
+
 
 
 
